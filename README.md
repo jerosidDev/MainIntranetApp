@@ -11,7 +11,7 @@ The project was a response to a few reporting issues:
 The solution was to use the browser to view data and charts. It became an intranet web application providing other services to colleagues.       
 
 # Structure of the solution
-  -	MainIntranetApp : main service accessible through AD identification and a browser for end users (colleagues)
+  -	MainIntranetApp : main service accessible through AD authentication and a browser for end users (colleagues)
   -	CompanyDbUpdate: run on the server daily to update the company database
   
 	    - Use the two following internal web APIs for the update
@@ -22,4 +22,4 @@ The solution was to use the browser to view data and charts. It became an intran
   
 # Objective
 It is to demonstrate my practical knowledge of the technologies I use on a daily basis. The repositories will contain some of the code contained in the different projects I work on.  
-I would appreciate feedbacks from experienced developers regarding the code, the architecture or different design patterns. When I started the solution, I was on a "make the solution works" mode focused on achieving successful proofs of concept. I am now on an "increase the solution's quality and maintainability" mode.
+I would appreciate feedbacks from experienced developers regarding the code, the architecture or different design patterns.
