@@ -8,7 +8,7 @@ The project was a response to a few reporting issues:
       - Remotely working colleagues would only be able to access them from a terminal server connection, adding strain to it
       - In some cases I had to create desktop applications to communicate with the CRM's web api and generate the Excel file, they had to be installed on each machine with administrator credentials, same issue when updating the applications
           
-The solution was to use the browser to view data and charts. It became an intranet web application providing services to colleagues.       
+The solution was to use the browser to view data and charts. It became an intranet web application providing other services to colleagues.       
 
 # Structure of the solution
   -	MainIntranetApp : main service accessible through AD identification and a browser for end users (colleagues)
