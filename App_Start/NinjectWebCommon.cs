@@ -63,10 +63,10 @@ namespace Reporting_application.App_Start
         private static void RegisterServices(IKernel kernel)
         {
 
-            kernel.Bind<ITourplanDBrepository>().To<TourplanDBrepository>();
+            kernel.Bind<IThirdpartyDBrepository>().To<ThirdpartyDBrepository>();
             kernel.Bind<ICompanyDBRepository>().To<CompanyDBRepository>();
             kernel.Bind<IPerformance>().To<Performance>();
-            kernel.Bind<ITourplanDBContext>().To<TourplanDBContext>();
+            kernel.Bind<IThirdpartyDBContext>().To<ThirdpartyDBContext>();
 
         }
     }
