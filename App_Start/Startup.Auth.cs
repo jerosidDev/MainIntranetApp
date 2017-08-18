@@ -27,7 +27,7 @@ namespace Reporting_application.App_Start
                 Provider = new CookieAuthenticationProvider(),
                 CookieName = "MyCookieName",
                 CookieHttpOnly = true,
-                ExpireTimeSpan = TimeSpan.FromHours(12), // adjust to your needs
+                ExpireTimeSpan = TimeSpan.FromHours(12), // adjust to needs
             });
 
 
