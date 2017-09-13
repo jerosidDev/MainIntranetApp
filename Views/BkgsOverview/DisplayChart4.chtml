@@ -1,0 +1,9 @@
+@model int?
+
+@{
+
+    string s = "/BkgsOverview/RenderChartImage?ChartId=" + @Model;
+
+    <img src= @s class="right"/>
+    
+}
