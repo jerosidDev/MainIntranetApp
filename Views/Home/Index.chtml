@@ -1,0 +1,286 @@
+@{
+    ViewBag.Title = "Home Page";
+}
+
+@model Dictionary<string, Dictionary<string, string>>
+
+
+@using ERAwebAPI.ModelsDB
+
+<div class="container">
+
+
+    <div class="jumbotron alert-info text-center">
+        <h1>E.R.A.</h1>
+        <p class="lead">Welcome to Reporting Application. This is the Web Application designed to deliver different services such as Business Intelligence, Reporting, Performance and company utilities. </p>
+    </div>
+
+
+    @if (ViewData["listUpdates"] != null)
+    {
+        // log of the daily automatic company db updates
+        IEnumerable<Log_Update> listUpdates = ViewData["listUpdates"] as IEnumerable<Log_Update>;
+
+        <div class="row">
+            <div class="panel panel-primary">
+                <div class="panel panel-heading text-center" style="background-color:#bd9c29;font-size:20px;font-weight:bolder;">
+                    ERA Database update Log ( minus figures indicate testing applied)
+                </div>
+                <div class="panel panel-body">
+
+                    <style>
+                        table {
+                            border-collapse: collapse;
+                            width: 100%;
+                        }
+
+                        td, th {
+                            border: 1px solid #dddddd;
+                            text-align: left;
+                            padding: 8px;
+                        }
+
+                        tr:nth-child(even) {
+                            background-color: #dddddd;
+                        }
+                    </style>
+
+                    <table>
+
+                        <tr>
+                            @foreach (System.Reflection.PropertyInfo p in typeof(Log_Update).GetProperties())
+                            {
+                                <th>@p.Name</th>
+                            }
+                        </tr>
+
+                        @foreach (Log_Update lu in listUpdates)
+                        {
+                            string redStyle = "";
+                            if (lu.API_call_failure > 0)
+                            {
+                                redStyle = "background-color:red;color:white;font-weight:bold;";
+                            }
+
+                            <tr>
+
+                                @foreach (System.Reflection.PropertyInfo p in lu.GetType().GetProperties())
+                                {
+                                    <td style=@redStyle>@p.GetValue(lu)</td>
+                                }
+
+                            </tr>
+                        }
+
+                    </table>
+
+                </div>
+            </div>
+
+
+        </div>
+
+    }
+
+
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="panel panel-success">
+                <div class="panel-heading">
+                    <h3 class="text-center"><span class="glyphicon glyphicon-calendar"></span> &#9998; Events and Contracts calendars</h3>
+                </div>
+                <div class="panel-body" style="background-color:cadetblue">
+                    @foreach (var kvp in Model)
+                    {
+                        <div class="panel panel-info">
+                            <div class="panel-heading">
+                                @kvp.Key
+                            </div>
+                            <div class="panel-body">
+                                @foreach (var kvp2 in kvp.Value)
+                                {
+                                    <a href=@kvp2.Value>@kvp2.Key</a>
+                                    <br />
+                                }
+                            </div>
+                        </div>
+                    }
+                    <div class="panel panel-danger">
+                        <div class="panel-heading">Bedbank</div>
+                        <div class="panel-body"><a href="https://...">View calendar</a></div>
+                    </div>
+                    <div class="panel panel-danger">
+                        <div class="panel-heading">Busy dates calendar</div>
+                        <div class="panel-body">
+                            <ul>
+                                <li>
+                                    <a href="https://...">London Busy Dates </a>
+                                </li>
+                                <li>
+                                    <a href="https://...">England/Wales Busy Dates </a>
+                                </li>
+                                <li>
+                                    <a href="https://...">Scotland Busy Dates </a>
+                                </li>
+                                <li>
+                                    <a href="https://...">Ireland Busy Dates </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="panel panel-danger">
+                        <div class="panel-heading">Contracts Meetings & Events </div>
+                        <div class="panel-body"><a href="https://...">View calendar</a></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <a onclick="moveProgressBar2('ProgressBarGroup')" href="/BkgsOverview">
+                <div class="panel panel-primary">
+                    <div class="panel-heading"> &#9728; Bookings Overview</div>
+                    <div class="panel-body">
+                        <p>An Overview of all the bookings at different stages of their cycle across  all departments:</p>
+                        <ul>
+                            <li> provides the level of business per department over a selected time frame</li>
+                            <li> enables the departmental identification of current blockages</li>
+                        </ul>
+                        <div style="display:none" id="ProgressBarGroup">
+                            <div class="container" style="width:250px">
+                                <p class="text-primary">Loading from the Database</p>
+                                <div class="progress">
+                                    <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+            <a onclick='moveProgressBar2("ProgressBarGroup2")' href="/GroupsTravellingOverview">
+                <div class="panel panel-primary">
+                    <div class="panel-heading" style="background-color:forestgreen">
+                        &#9992; Enquiries analysis
+                    </div>
+                    <div class="panel-body">
+                        <p>Overview of all the enquiries for the current financial year</p>
+                        <ul>
+                            <li>Visual analysis per travel date , date entered , date confirmed</li>
+                            <li>Comparison with the previous financial  year</li>
+                            <li>Sales updates</li>
+                            <li>Individual client variation</li>
+                        </ul>
+                        <div style="display:none" id="ProgressBarGroup2">
+                            <div class="container" style="width:250px">
+                                <p class="text-primary">Loading from the Database</p>
+                                <div class="progress">
+                                    <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;background-color:forestgreen;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+
+        </div>
+        <div class="col-md-4">
+            <div class="panel panel-danger">
+                <div class="panel panel-heading">
+                    Bd/Ops Utilities
+                </div>
+                <div class="panel panel-body">
+                    <a href="/FollowUpBkgs">
+                        <p> <i class="glyphicon glyphicon-earphone"></i> &#9743; Follow up Bookings:</p>
+                        <ul><li>clients who need to be contacted now or soon before the confirmation stage</li></ul>
+                    </a>
+                </div>
+            </div>
+
+
+            <a onclick='moveProgressBar2("ProgressBarGroup3")' href="/PerformanceOverview/Index">
+                <div class="panel panel-primary">
+                    <div class="panel-heading " style="background-color:orange">
+                        Individual performances
+                    </div>
+                    <div class="panel panel-body">
+
+                        <ul>
+
+                            <li>
+                                Sales and BD/Ops: Departments and Consultants
+                                <ul>
+                                    <li>Enquiries turnaround: sent within or beyond deadlines</li>
+                                    <li>Conversion rate out of all enquiries entered</li>
+                                    <li>Missing or incorrect data</li>
+                                </ul>
+                            </li>
+                            <li>
+                                Contract:
+                                <ul>
+                                    <li>Contract enquiries within or beyond deadlines</li>
+                                    <li>TBA : To be advised services workload</li>
+                                </ul>
+                            </li>
+
+                            <li>Pending enquiries and their deadlines</li>
+
+                        </ul>
+
+                        <div style="display:none" id="ProgressBarGroup3">
+                            <div class="container" style="width:250px">
+                                <p class="text-primary">Loading from the Database</p>
+                                <div class="progress">
+                                    <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;background-color:orange;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+
+                    </div>
+                </div>
+            </a>
+
+
+
+            <div class="panel panel-primary">
+                <div style="background-color:#759e18;" class="panel panel-heading">
+                    Human Resources
+                </div>
+
+                <div class="panel panel-body">
+
+                    <a href="https://..."> HR login </a>
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+
+    // show the div containing the progress bar
+    // increase the size of the selected progress bar
+    function moveProgressBar2(progressBarGroup) {
+        $('#' + progressBarGroup).css('display', 'block');
+        var width = 1;
+        var id = setInterval(frame, 100);
+        function frame() {
+            if (width >= 100) {
+                clearInterval(id);
+            } else {
+                width++;
+                $('#' + progressBarGroup + ' [role="progressbar"]').css('width', width + '%');
+            }
+        }
+    }
+
+</script>
