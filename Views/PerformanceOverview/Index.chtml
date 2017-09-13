@@ -1,0 +1,438 @@
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@using System.Collections.Generic
+
+
+
+<script src="https://www.gstatic.com/charts/loader.js"></script>
+<script src="~/Scripts/PerformanceCharts/DataAndGraphics.js"></script>
+<script src="~/Scripts/PerformanceCharts/Calculation.js"></script>
+<script src="~/Scripts/typeScript/PendingEnquiries.js"></script>
+<script src="~/Scripts/typeScript/postTBAassignment.js"></script>
+<script src="~/Scripts/typeScript/LoadTBAitemsGraphics.js"></script>
+
+<link href="~/Content/PerformanceView/PerformanceIndex2.css" rel="stylesheet" />
+
+<script>
+    $(document).ready(function () {
+
+        $(".datepicker").datepicker({ format: 'dd/mm/yyyy', autoclose: true, todayBtn: 'linked' })
+
+        // help panel and column charts panels
+        $('#helpDisplayer, li a[href="#section0"]').click(function () {
+            $('#explainer').toggle(1000);
+        });
+        $('#helpDisplayer').hover(function () {
+            $('#helpDisplayer').css('cursor', 'pointer');
+        });
+
+        $("#gauge1_div,#gauge2_div,#gauge3_div,#gauge4_div,#gauge5_div,#gauge6_div").tooltip();
+        $("#gauge7_div,#gauge8_div,#gauge9_div,#gauge10_div").tooltip();
+        $("#cp").tooltip();
+
+        $('#ShowLocationPanel').click(function () {
+            $('#ShowLocationPanel+.panel').toggle(1000);
+        });
+
+
+    });
+</script>
+
+<body data-spy="scroll" data-target="#myScrollspy" data-offset="15">
+
+
+    <div class="container-fluid">
+
+        <nav class="col-md-2" id="myScrollspy">
+            <br />
+            <br />
+            <br />
+            <ul class="nav nav-pills nav-stacked" data-spy="affix" data-offset-top="20" style="width:200px;background-color:gainsboro">
+                <li class="active"><a href="#section0">Toggle Help</a></li>
+                <li><a href="#section1">Performance Sales and BD/Ops</a></li>
+                <li><a href="#section3">Performance of the Contract team</a></li>
+                <li><a href="#section2">Pending enquiries approaching deadlines</a></li>
+            </ul>
+        </nav>
+
+        <div class="col-md-10" id="section0">
+            <br /><br /><br /><br />
+            <div class="row" style="background:linear-gradient(to bottom right, red, yellow ,green)">
+                <img src="~/Content/Images/performanceCheetah.jpg" style="height: 200px;border-radius: 100%;display: block;margin: auto;" id="helpDisplayer" />
+            </div>
+
+            <div class="row" style="font-size: x-large; font-weight: bold;">
+
+                <div class="panel panel-success">
+                    <div class="panel panel-heading">
+                        Performance overview
+                        <br />
+                        (Click on the cheetah for explanations)
+                    </div>
+                    <div class="panel panel-body" style="display:none;font-weight:normal" id="explainer">
+
+                        <h2> Context</h2>
+                        <br />
+                        Since the 1st May 2017, the reporting App has its own system to record the bookings on a daily basis.
+                        <br />
+                        Information which is not retained by the booking system is now stored in the reporting App's database.
+                        <br />
+                        <br />
+                        <ul>
+                            For each day and each booking monitored, the following information are stored:
+                            <li> Booking status</li>
+                            <li> the consultant on the day</li>
+                            <li> the Sales update on the day</li>
+                        </ul>
+                        The daily cut off time is 4pm, so for example every statuses changed before that time will count towards the current day and statuses changed after that time will count towards the following day.
+                        <br />
+                        <br />
+                        <span style="font-style:italic;font-weight:bold ">What this means in terms of evaluation:</span>
+                        <p style="margin-left:40px">
+                            <ul>
+                                <li>The deadlines for quoting and contracting are calculated for all enquiries entered after the &nbsp<span style="text-decoration:underline">1st May 2017</span>. These are calculated using the reporting App's database. Quoting and contracting periods are differentiated and evaluated independently.</li>
+                                <li>The conversion rates and missing data are calculated from the booking system for all bookings entered after the &nbsp<span style="text-decoration:underline">1st February 2017</span>.</li>
+                            </ul>
+
+                            <br />
+
+                        </p>
+
+                        <span style="font-style:italic;font-weight:bold">What you need to make sure of:</span>
+                        <p style="margin-left:40px">
+                            That you entered in the "Response time" box in the booking system, the right type of offer according to &nbsp;<a href="#dlTable">the table below</a>. If this is omitted, the default deadline of 24hrs will be used for the calculation.
+                        </p>
+
+
+                        <br />
+                        <h2 id="dlTable">Enquiries sent: deadlines for quoting and contracting</h2>
+                        <br />
+                        They are based on the following table:
+                        <br />
+                        <img src="~/Content/Images/QuotingContractDeadline2.png" />
+                        <br />
+                        <br />
+                        "Specific deadline agreed": the field "Deadine date" has to be filled on the booking header in the booking system. It is based on the client's or the supplier's response expectation.
+                        <br />
+                        <br />
+                        <a href="#colChart1_div">The first bar</a> chart gives details about the enquiries sent.
+
+                        <h2>Conversion rate</h2>
+                        This is the ratio of the enquiries which were confirmed/cancelled out of all the enquiries entered from the 1st February 2017.
+                        <br />
+                        The evaluation is based on the "BD consultant" field in the booking system.
+                        <br />
+                        <a href="#colChart2_div">The second bar</a> chart gives details about those enquiries.
+
+                        <h2>Data validation</h2>
+                        <br />
+                        What defines an enquiry with missing or invalid data:
+                        <ul>
+                            <li>An enquiry which is part of a series, does not have the reference of the first enquiry of the series<ul><li>Invalid series reference: if the series reference does not refer to an existing enquiry</li></ul></li>
+                            <li>An enquiry which went beyond the sent stage:<ul><li>does not have an estimated turnover</li><li>or does not have a Sales update</li></ul> </li>
+                        </ul>
+                        <br />
+                        Here is an illustration on the booking header in the booking system:
+                        <br />
+                        <img src="~/Content/Images/MissingData.png" />
+                        <br />
+                        <br />
+                        <a href="#colChart3_div">The third bar</a> chart gives details about the missing or invalid data.
+                        <br />
+                        <br />
+                        <h2>Department versus Consultant evaluations</h2>
+                        A department is evaluated on its own enquiries only whereas a consultant is evaluated on all his/her enquiries across  departments
+                        <ul>
+                            <li> It means whichever department you select, the consultant's evaluation should be constant</li>
+                        </ul>
+                        <br />
+                        <br />
+                        <h2>Using the bar charts</h2>
+
+                        <ul>
+                            <li>click on a chart bar to view a table containing detailed information</li>
+                            <li>click on the same bar to deselect the table</li>
+                            <li>if you are stuck on a table, just click twice on any bar of the same chart</li>
+                            <li>
+                                Zooming:<ul>
+                                    &nbsp &nbsp you can zoom on each bar chart
+                                    <li>drag and drop the mouse next to the bar you wish to zoom in </li>
+                                    <li>right click on the mouse in the chart to go back to the initial view</li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                        <h2>Using the table for pending enquiries</h2>
+                        <ul>
+                            <li>You can sort by column by clicking on the <a href="#section2">table header</a></li>
+                        </ul>
+
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="row" id="section1">
+                <br />
+                <br />
+                <br />
+
+                <div class="panel panel-primary">
+
+                    <div class="panel panel-heading">
+                        <h2>Sales and BD/Ops:</h2>
+                        <hr />
+                        <h2>Enquiries sent, converted and data completion</h2>
+                    </div>
+
+                    <div class="panel panel-body">
+
+                        <div class="col-md-6">
+                            <div class="panel panel-info">
+                                <div class="panel panel-heading text-center">
+                                    <label>
+                                        Department:
+                                        <select id="dpt">
+                                            @{
+                                                IList<string> dptList = ViewData["dptList"] as IList<string>;
+                                                foreach (string dptName in dptList)
+                                                {
+                                                    <option value=@dptName>@dptName</option>
+                                                }
+                                            }
+                                        </select>
+                                    </label>
+                                </div>
+                                <div class="panel panel-body text-center">
+                                    <a href="#colChart1_div"><div id="gauge1_div" style="width:200px;float:left;" title="click to see the bar chart related"></div></a>
+                                    <a href="#colChart2_div">
+                                        <div id="gauge2_div" style="width:200px;float:left;" title="click to see the bar chart related"></div>
+                                    </a>
+                                    <a href="#colChart3_div"><div id="gauge3_div" style="width:200px;float:left;" title="click to see the bar chart related"></div></a>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="panel panel-info">
+                                <div class="panel panel-heading text-center">
+                                    <label>
+                                        Consultant:
+                                        <select id="csl"></select>
+                                    </label>
+
+                                </div>
+                                <div class="panel panel-body text-center">
+                                    <a href="#colChart1_div">
+                                        <div id="gauge4_div" style="width:200px;float:left;" title="click to see the bar chart related"></div>
+                                    </a>
+                                    <a href="#colChart2_div"><div id="gauge5_div" style="width:200px;float:left;" title="click to see the bar chart related"></div></a>
+                                    <a href="#colChart3_div"><div id="gauge6_div" style="width:200px;float:left;" title="click to see the bar chart related"></div></a>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="row">
+                <div class="panel panel-primary">
+                    <div class="panel panel-heading" id="sent">
+                        Sent within/beyond Deadline
+                    </div>
+                    <div class="panel-body">
+                        <div id="colChart1_div"></div>
+                    </div>
+                    <a href="#section1">
+                        <div class="panel panel-footer">
+                            &#9650; Back to the top
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="panel panel-primary">
+                    <div class="panel panel-heading" id="conv">
+                        Conversion: confirmed/unconfirmed
+                    </div>
+                    <div class="panel-body">
+                        <div id="colChart2_div"></div>
+                    </div>
+                    <a href="#section1">
+                        <div class="panel panel-footer">
+                            &#9650; Back to the top
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="panel panel-primary">
+                    <div class="panel panel-heading" id="miss">
+                        Missing or invalid data
+                    </div>
+                    <div class="panel-body">
+                        <div id="colChart3_div"></div>
+                    </div>
+                    <a href="#section1">
+                        <div class="panel panel-footer">
+                            &#9650; Back to the top
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+
+            <div class="row" id="section3">
+                <br />
+                <br />
+                <br />
+                <div class="panel panel-primary">
+                    <div class="panel panel-heading">
+                        Contract Department
+                        <hr />
+                        <div id="ShowLocationPanel">Contract team leader: please assign the locations to the Contract consultants by clicking on this header</div>
+                        <div class="panel panel-info">
+                            <div class="panel panel-heading"> To Be Advised hotels locations </div>
+                            <div class="panel panel-body">
+                                <div class="col-md-10">
+                                    @{
+                                        var selectCsl = (ViewData["DictCsls"] as Dictionary<string, string>)
+                                                                        .Select(d => new SelectListItem() { Value = d.Key, Text = d.Value });
+                                        var LocCsl = ViewData["LocCsl"] as Dictionary<string, string>;
+                                    }
+
+                                    @foreach (var loc in ViewData["dictLocations"] as Dictionary<string, string>)
+                                    {
+
+                                        selectCsl = selectCsl.Select(sl =>
+                                        {
+                                            sl.Selected = sl.Value == LocCsl[loc.Key];
+                                            return sl;
+                                        });
+
+
+                                        string bgColor = LocCsl[loc.Key] == null ? "red" : "white";
+                                        string color = LocCsl[loc.Key] == null ? "white" : "black";
+                                        //string styleAttr = $"color: {color};background-color: {bgColor};";
+                                        string styleAttr = "color: "+color+";background-color: "+bgColor+";";
+
+
+                                        <div class="row">
+                                            <label value=@loc.Key>@loc.Value.Trim() </label>
+                                            @Html.DropDownList("Csl", selectCsl, new { style = styleAttr })
+                                            <button type="button" class="btn btn-primary">Save</button>
+                                            <hr />
+                                        </div>
+                                    }
+                                </div>
+
+
+
+
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="panel panel-body">
+                        <div class="panel panel-info col-md-6">
+                            <div class="panel panel-heading text-center">
+                                <label>
+                                    All Contract Consultants
+                                </label>
+                            </div>
+                            <div class="panel panel-body text-center">
+                                <div class="col-md-offset-2">
+                                    <a href="#colChart4_div"><div id="gauge7_div" style="width:200px;float:left;" title="click to see the bar chart related"></div></a>
+                                    <a href="#colChart5_div"><div id="gauge9_div" style="width:200px;float:left;" title="click to see the bar chart related"></div></a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel panel-info col-md-6">
+                            <div class="panel panel-heading text-center">
+                                <label>
+                                    Contract Consultant:
+                                    <select id="contractCsl">
+                                        @foreach (var kvp in ViewData["listContractCsl"] as Dictionary<string, string>)
+                                        {
+                                            <option value=@kvp.Key>@kvp.Value</option>
+                                        }
+                                    </select>
+                                </label>
+                            </div>
+                            <div class="panel panel-body text-center">
+                                <div class="col-md-offset-2">
+                                    <a href="#colChart4_div"><div id="gauge8_div" style="width:200px;float:left;" title="click to see the bar chart related"></div></a>
+                                    <a href="#colChart5_div"><div id="gauge10_div" style="width:200px;float:left;" title="click to see the bar chart related"></div></a>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="panel panel-primary">
+                    <div class="panel panel-heading">
+                        Contract periods for sent enquiries
+                    </div>
+                    <div class="panel panel-body">
+                        <div id="colChart4_div"></div>
+                    </div>
+                    <a href="#section3">
+                        <div class="panel panel-footer">
+                            &#9650; Back to Performance of the contract team
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="panel panel-primary">
+                    <div class="panel panel-heading">
+                        To be advised workload per consultant
+                    </div>
+                    <div class="panel panel-body">
+                        <div id="colChart5_div"></div>
+                    </div>
+                    <a href="#section3">
+                        <div class="panel panel-footer">
+                            &#9650; Back to Performance of the contract team
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <div class="row" id="section2">
+                <br />
+                <br />
+                <br />
+                <div class="panel panel-primary">
+                    <div class="panel panel-heading">
+                        Pending enquiries approaching deadlines
+                    </div>
+                    <div class="panel panel-body">
+                        <div id='PendingTable_div'></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
