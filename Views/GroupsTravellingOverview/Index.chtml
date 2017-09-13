@@ -1,0 +1,637 @@
+@model IEnumerable<object>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<script src="https://www.gstatic.com/charts/loader.js"></script>
+<script src="~/Scripts/GoogleCharts/FilteredSeries.js"></script>
+<script src="~/Scripts/EventsTesting/Events.js"></script>
+
+
+
+@*<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>*@
+@*@Styles.Render("~/Content/css")
+@Scripts.Render("~/bundles/modernizr")
+@Scripts.Render("~/bundles/jquery")
+@Scripts.Render("~/bundles/bootstrap")*@
+
+
+<style>
+    .google-visualization-tooltip {
+        width: 720px;
+        height: 560px;
+        overflow-y: scroll;
+    }
+
+
+
+    /*arrows inside thead table chart*/
+    .google-visualization-formatters-arrow-dr, .google-visualization-formatters-arrow-ug {
+        background-size: 20%;
+    }
+
+    label {
+        padding: 4px;
+    }
+
+    /* styling for the google table chart*/
+    .centering_text {
+        text-align: center;
+        font-size: large;
+        /*padding:12px 30px;*/
+    }
+
+    .white_on_blue {
+        color: white;
+        background-color: blue;
+        cursor: pointer;
+        background: linear-gradient(green, orange, red);
+    }
+
+
+
+    /*general styles*/
+    div.container.body-content {
+        max-width: 2000px;
+        min-width: 1900px;
+    }
+
+
+
+    .All {
+        background-color: darkblue;
+        color: white;
+    }
+
+    .Confirmed {
+        background-color: green;
+        color: white;
+    }
+
+    .Unconfirmed {
+        background-color: darkorange;
+        color: white;
+    }
+
+    .Cancelled {
+        background-color: red;
+        color: white;
+    }
+
+
+    .panel-body select {
+        color: white;
+        background-color: black;
+        font-weight: 900;
+    }
+
+
+
+    /* hide the booking statuses by default*/
+    .col-md-12 ul {
+        display: none;
+    }
+
+    div.panel.panel-primary.affix label {
+        border: black 1px dashed;
+        display: block;
+    }
+
+        div.panel.panel-primary.affix label:hover {
+            cursor: pointer;
+        }
+
+
+
+    .instruction {
+        color: white;
+        list-style-position: inside;
+        background-color: green;
+        border: 1px solid white;
+    }
+
+        .instruction:hover {
+            cursor: pointer;
+        }
+
+
+        .instruction li {
+            display: none;
+        }
+</style>
+
+
+
+
+<link href="~/Content/bootstrap-datepicker3.css" rel="stylesheet" />
+
+
+<script>
+
+    //$(document).ready(function () {
+
+    //    // calendar initialisation: I had to put the script on the top to get the 2 datepickers to display the calendar
+    //    $(".datepicker").datepicker({ format: 'dd/mm/yyyy', autoclose: true, todayBtn: 'linked', startDate: '01/02/2016' });
+
+
+    //    // detect a change event on datepicker
+    //    $('.datepicker').datepicker().on('changeDate', function (e) {
+
+
+    //        // get the first date
+    //        var d1 = $('#beginDate').val();
+
+    //        // get the second date
+    //        var d2 = $('#endDate').val();
+
+    //        // fill the 2 labels associated with the previous year
+    //        var parts = d1.split('/');
+    //        var s1 = parts[0] + '/' + parts[1] + '/' + (parts[2] - 1);
+
+    //        var parts = d2.split('/');
+    //        var s2 = parts[0] + '/' + parts[1] + '/' + (parts[2] - 1);
+
+    //        $('#beginDatePY').text(s1);
+    //        $('#endDatePY').text(s2);
+
+    //    });
+
+    //});
+</script>
+
+
+
+<div class="container-fluid" style="position:relative">
+
+    <div class="col-md-3">
+
+        <div class="panel panel-primary affix">
+            <div class="panel-heading" style="background-color:forestgreen">
+                <h3 class="text-center">Select your parameters</h3>
+            </div>
+            <div class="panel-body" style="overflow-y:scroll;height:500px">
+
+                <div class="row">
+
+                    <div class="col-md-12">
+                        <p>Departments:</p>
+
+                        @{
+                            string optionName = "CompanyDpt";
+                        }
+                        <select name=@optionName>
+                            <option value="All">All</option>
+                            @foreach (object n in ViewData[optionName] as IEnumerable<object>)
+                            {
+                                System.Reflection.PropertyInfo pFilterName = n.GetType().GetProperty("fName");
+                                var v = Html.Raw("\"" + pFilterName.GetValue(n).ToString() + "\"");
+
+                                System.Reflection.PropertyInfo pTextName = n.GetType().GetProperty("tName");
+                                var t = pTextName.GetValue(n).ToString();
+
+                            <option value=@v>@t</option>
+                            }
+                        </select>
+
+                    </div>
+
+
+                </div>
+
+
+                <div class="row">
+
+                    <div class="col-md-12">
+                        <br />
+                        <p>Booking types:</p>
+                        @{
+                            optionName = "BookingType";
+                        }
+
+                        <select name=@optionName>
+                            <option value="All">All</option>
+                            @foreach (object n in ViewData[optionName] as IEnumerable<object>)
+                            {
+                                System.Reflection.PropertyInfo pFilterName = n.GetType().GetProperty("fName");
+                                var v = Html.Raw("\"" + pFilterName.GetValue(n).ToString() + "\"");
+
+                                System.Reflection.PropertyInfo pTextName = n.GetType().GetProperty("tName");
+                                var t = pTextName.GetValue(n).ToString();
+
+                            <option value=@v>@t</option>
+                            }
+                        </select>
+
+
+                    </div>
+
+
+                </div>
+
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <br />
+                        <label>
+                            <input checked="checked" type="checkbox" value="true" id="currentYear" />Current Financial Year
+                        </label>
+                        <br />
+                        <label>
+                            <input type="checkbox" value="true" id="previousYear" />Previous Financial Year
+                        </label>
+
+
+                    </div>
+                </div>
+
+
+                <div class="row">
+
+                    <div class="col-md-12">
+                        <p style="border-style:outset;margin-top: 14px;">
+                            View period: <br />
+
+                            <input style="margin-left: 20px;" type="radio" name="viewPeriod" value="monthly" checked id="radioMonthly"> Monthly <br />
+
+                            <input style="margin-left: 20px;" type="radio" name="viewPeriod" value="weekly" id="radioWeekly"> Weekly <br />
+
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <p>Booking stages:</p>
+
+
+                        <div class="col-md-8 col-md-offset-1">
+                            @{
+                                //extract all the status from ViewData["Stages"]
+                                Dictionary<string, List<string>> stages = ViewData["Stages"] as Dictionary<string, List<string>>;
+                                string valDisplayed = " " + "All";
+                                string stl = valDisplayed.Trim();
+                                var cbId = Html.Raw("\"" + "cb" + stl + "\"");
+                            <label class=@stl>
+                                <input type="checkbox" value="true" id=@cbId /> @valDisplayed
+                            </label>
+                            <ul>
+                                Booking Statuses
+                                @foreach (KeyValuePair<string, List<string>> kvp in stages)
+                                    {
+                                        foreach (string st in kvp.Value)
+                                        {
+                                <li>@st</li>
+                                        }
+                                    }
+                            </ul>
+
+
+                            }
+
+                        </div>
+
+                        <div class="col-md-7 col-md-offset-2">
+
+                            @foreach (KeyValuePair<string, List<string>> kvp in stages)
+                            {
+                                valDisplayed = " " + kvp.Key;
+                                stl = kvp.Key;
+                                var cbId2 = Html.Raw("\"" + "cb" + stl + "\"");
+                            <label class=@stl>
+                                <input checked="checked" type="checkbox" value="true" id=@cbId2 /> @valDisplayed
+                            </label>
+                            <ul>
+                                Booking Statuses
+                                @foreach (string st in kvp.Value)
+                                    {
+                                <li>@st</li>
+                                    }
+                            </ul>
+                            }
+                        </div>
+
+
+
+                    </div>
+
+
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <br />
+                        <p>Consultant:</p>
+                        @{
+                            optionName = "ConsultantCode";
+                        }
+
+                        <select name=@optionName>
+                            <option value="All">All</option>
+                            @foreach (object n in ViewData[optionName] as IEnumerable<object>)
+                            {
+                                System.Reflection.PropertyInfo pFilterName = n.GetType().GetProperty("fName");
+                                var v = Html.Raw("\"" + pFilterName.GetValue(n).ToString() + "\"");
+
+                                System.Reflection.PropertyInfo pTextName = n.GetType().GetProperty("tName");
+                                var t = pTextName.GetValue(n).ToString();
+
+                            <option value=@v>@t</option>
+                            }
+                        </select>
+
+
+                    </div>
+
+
+
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <br />
+                        <p>Locations:</p>
+                        @{
+                            optionName = "LocationName";
+                        }
+                        <select name=@optionName>
+                            <option value="All">All</option>
+                            @foreach (object n in ViewData[optionName] as IEnumerable<object>)
+                            {
+                                System.Reflection.PropertyInfo pFilterName = n.GetType().GetProperty("fName");
+                                var v = Html.Raw("\"" + pFilterName.GetValue(n).ToString() + "\"");
+
+                                System.Reflection.PropertyInfo pTextName = n.GetType().GetProperty("tName");
+                                var t = pTextName.GetValue(n).ToString();
+
+                            <option value=@v>@t</option>
+                            }
+                        </select>
+
+                    </div>
+
+
+
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <br />
+                        <p>
+                            <b>Clients:</b>
+                            <i class="glyphicon glyphicon-search" style="padding-left:10px;padding-right:10px;"></i>
+                            <input type="text" name="searchterm" maxlength="20" value="">
+                        </p>
+                        @{
+                            optionName = "AgentCode";
+                        }
+                        <select name=@optionName>
+                            <option value="All">All</option>
+                            @foreach (object n in ViewData[optionName] as IEnumerable<object>)
+                            {
+                                System.Reflection.PropertyInfo pFilterName = n.GetType().GetProperty("fName");
+                                var v = Html.Raw("\"" + pFilterName.GetValue(n).ToString() + "\"");
+
+                                System.Reflection.PropertyInfo pTextName = n.GetType().GetProperty("tName");
+                                var t = pTextName.GetValue(n).ToString();
+
+                            <option value=@v>@t</option>
+                            }
+                        </select>
+
+                    </div>
+
+
+
+                </div>
+
+
+
+            </div>
+        </div>
+
+    </div>
+
+    <div class="col-md-9">
+        <div class="well" style="background-color:forestgreen">
+            <h1 class="text-center" style="color:white">Enquiries Overview</h1>
+            <ul class="text-center instruction">
+                Instructions
+                <li style="padding: 10px">
+                    <span class="glyphicon glyphicon-flash"></span>select your parameters on the left (scroll if necessary)
+                </li>
+                <li style="padding: 10px">
+                    <span class="glyphicon glyphicon-flash"></span>click on a chart column to keep a table visible
+                </li>
+                <li style="padding: 10px">
+                    <span class="glyphicon glyphicon-flash"></span>click on the same column to deselect the table
+                </li>
+                <li style="padding: 10px">
+                    <span class="glyphicon glyphicon-flash"></span>the previous year related charts are displayed as lighter  colors
+                </li>
+            </ul>
+        </div>
+
+        <style>
+            div.google-visualization-tooltip {
+                z-index: 3;
+
+                font-size: 14px;
+            }
+        </style>
+
+
+
+        <div id="chart_div"></div>
+
+        <div id="enquiriesEntered_div"></div>
+
+        <div id="enquiriesFinalised_div"></div>
+
+        <div id="missingData_div" style="display:none"></div>
+
+
+
+        <div id="travelPeriodPanel" class="panel panel-primary">
+            <div class="panel-heading text-center" style="background-color:forestgreen;color:white">
+                <h2>Year on year variations per client</h2>
+                <ul class="instruction">
+                    Instructions
+                    <li>
+                        <span class="glyphicon glyphicon-flash"></span>Select your parameters on the left
+                    </li>
+                    <li>
+                        <span class="glyphicon glyphicon-flash"></span>Select the travel period for which you want to see the difference with the previous year
+                    </li>
+                    <li>
+                        <span class="glyphicon glyphicon-flash"></span>Click on a table row to display the client on the chart above
+                    </li>
+                </ul>
+            </div>
+            <div class="panel-body" style="font-size:large; background-color:rgba(35, 84, 43, 0.45);">
+                <div class="row">
+                    <div class="col-md-4">
+                        <p>Travel period</p>
+                    </div>
+                    <div class="col-md-4">
+                        @{
+                            // from date by default will be in 1 month time
+                            DateTime d1 = DateTime.Today.AddMonths(1);
+                        }
+                        <p>
+                            From
+                            @*<input id="beginDate" type="text" class="form-control datepicker" value=@d1 />*@
+                            <input id="beginDate" type="text" class="dp" data-date-format="dd/mm/yyyy"   value=@d1/>
+                        </p>
+                    </div>
+                    <div class="col-md-4">
+                        @{
+                            // to date by default will be in 3 month time
+                            DateTime d2 = DateTime.Today.AddMonths(4);
+                        }
+                        <p>
+                            To
+                            @*<input id="endDate" type="text" class="form-control datetimepicker" value=@d2 />*@
+                            <input id="endDate" type="text" class="dp" data-date-format="dd/mm/yyyy" value=@d2 />
+                        </p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        @{
+                            DateTime p1 = d1.AddYears(-1);
+                            string s1 = p1.ToString("dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture);
+                            DateTime p2 = d2.AddYears(-1);
+                            string s2 = p2.ToString("dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture);
+                        }
+                        <p>Will be compared with</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p>
+                            From
+                            <label id="beginDatePY">@s1</label>
+                        </p>
+                    </div>
+                    <div class="col-md-4">
+                        <p>
+                            To
+                            <label id="endDatePY">@s2</label>
+                        </p>
+                    </div>
+                </div>
+                <hr />
+                <div id="table_div" class="text-center"></div>
+            </div>
+        </div>
+
+
+
+    </div>
+
+
+
+
+
+
+
+</div>
+
+
+
+
+
+<script>
+
+    $(document).ready(function () {
+
+        $('.instruction').click(function () {
+            $('.instruction li').toggle(1000);
+        });
+
+        // select a client based on the search criteria
+        $('[name="searchterm"]').keyup(function () {
+            var s = this.value;
+            //  find the client name
+            var listOptions = $('[name="AgentCode"] option');
+            for (var numOption = 0; numOption < listOptions.length ; numOption++) {
+                var txtInside = listOptions.eq(numOption).text();
+                var s1 = s.toLowerCase();
+                var s2 = txtInside.toLowerCase();
+                // if case insensitive contains s
+                if (s2.indexOf(s1) >= 0) {
+                    // select the appropriate option
+                    $('[name="AgentCode"]').prop('selectedIndex', numOption);
+                    $('[name="AgentCode"]').trigger("change");
+                    break;
+                }
+            }
+        });
+
+
+        $('#exportCSV').on('click', function () {
+
+
+            //$('.google-visualization-tooltip a').trigger("click");
+            alert("hello");
+        });
+
+
+        $('.google-visualization-tooltip').on('click', function () {
+
+
+            //$('.google-visualization-tooltip a').trigger("click");
+            alert("hello google");
+        });
+
+
+
+
+
+
+
+        // show the status codes for the different stages on mouse hover
+        $('div.row:contains(Statuses) label').hover(function () {
+            // show the label's first sibling
+            var ul = $(this).next();
+            ul.toggle();
+            // make the first sibling borrow the class of the label
+            ul.addClass($(this).prop('class'));
+        });
+
+
+    });
+
+
+    // Export the tables displayed on the chart to excel
+    function exportToXL() {
+
+        //$('.google-visualization-tooltip table')
+
+        var tab_text = '<html xmlns:x="urn:schemas-microsoft-com:office:excel">';
+        tab_text = tab_text + '<head><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>';
+
+        tab_text = tab_text + '<x:Name>Test Sheet</x:Name>';
+
+        tab_text = tab_text + '<x:WorksheetOptions><x:Panes></x:Panes></x:WorksheetOptions></x:ExcelWorksheet>';
+        tab_text = tab_text + '</x:ExcelWorksheets></x:ExcelWorkbook></xml></head><body>';
+
+        tab_text = tab_text + "<table border='1px'>";
+        tab_text = tab_text + $('.google-visualization-tooltip table').first().html();
+        tab_text = tab_text + '</table></body></html>';
+
+        // var data_type = 'data:application/vnd.ms-excel';
+        var data_type = 'data:application/csv';
+
+        $('#exportXL').attr('href', data_type + ', ' + encodeURI(tab_text));
+        //$('#exportXL').attr('download', 'Test file.xls');
+        $('#exportXL').attr('download', 'Test file.csv');
+
+
+    }
+
+
+</script>
+
