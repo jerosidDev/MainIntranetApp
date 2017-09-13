@@ -1,0 +1,78 @@
+@model Reporting_application.Controllers.LoginViewModel
+
+
+@{
+    ViewBag.Title = "Login";
+}
+
+@*<h2>Login</h2>*@
+
+
+    <div class="jumbotron text-center alert alert-success">
+        <h1>Welcome to Reporting Application</h1>
+        
+        <br />
+        @*<blockquote>"Knowledge is worth more when shared"</blockquote>*@
+  
+        <div class="panel panel-info">
+
+
+            <div class="panel panel-heading">
+                <h3>To connect to the company intranet, please provide the same login and password as the one you use when logging to your PC.</h3>
+                    
+            </div>
+
+            <div class="panel panel-body">
+
+
+                    <div class="col-md-6 col-md-offset-3 text-center">
+
+                        <section id="loginForm">
+                            @using (Html.BeginForm("Index", "Login", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+            {
+                                @Html.AntiForgeryToken()
+                                <hr />
+                                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                                <div class="form-group">
+                                    @Html.LabelFor(m => m.Username, new { @class = "col-md-2 control-label" })
+                                    <div class="col-md-10">
+                                        @Html.TextBoxFor(m => m.Username, new { @class = "form-control" , @placeholder = "e.g 'John Doe' , 'John.Doe'" })
+                                        @Html.ValidationMessageFor(m => m.Username, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    @Html.LabelFor(m => m.Password, new { @class = "col-md-2 control-label" })
+                                    <div class="col-md-10">
+                                        @Html.PasswordFor(m => m.Password, new { @class = "form-control" })
+                                        @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-10">
+                                        <input type="submit" value="Log in" class="btn btn-info" />
+                                    </div>
+                                        
+                                </div>
+                            }
+                        </section>
+
+                    </div>
+
+
+               
+
+            </div>
+
+            
+
+        </div>
+
+          
+  
+
+    </div>
+
+
+
+
+
