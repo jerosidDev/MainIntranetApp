@@ -1,0 +1,76 @@
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+
+@*@Scripts.Render("~/bundles/jquery")
+@Scripts.Render("~/bundles/bootstrap")*@
+
+<div class="well well-lg text-center alert-warning"><h2> <span class="glyphicon glyphicon-earphone"></span> &#9743;  Follow up Bookings</h2></div>
+
+
+<div class="container">
+    <div class="row">
+        <div class="well well-lg alert-danger text-center text-danger"> <h3> Past the deadline</h3></div>
+
+        <div id="PastDeadline">
+
+
+        </div>
+
+    </div>
+
+    <div class="row">
+        <div class="well well-lg alert-warning text-center text-warning"> <h3> To be done today</h3></div>
+
+        <div id="ToBeDoneToday">
+
+
+        </div>
+
+    </div>
+
+
+    <div class="row">
+        <div class="well well-lg alert-success text-center text-success"> <h3> To be done within the next 7 days</h3></div>
+
+        <div id="ToBeDoneWithin7Days">
+
+
+        </div>
+
+    </div>
+
+
+    <div class="row">
+        <div class="well well-lg alert-info text-center text-info"> <h3> All follow up </h3></div>
+
+        <div id="AllFollowUp">
+
+
+        </div>
+
+    </div>
+
+
+
+</div>
+
+
+
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+<script src="~/Scripts/GoogleCharts/GoogleTable.js"></script>
+
+
+
+
+
+
+
+
