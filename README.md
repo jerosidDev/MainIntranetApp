@@ -1,17 +1,17 @@
 
 # Objective
-It is to demonstrate my practical knowledge of the technologies I use on a daily basis. The repositories will contain only some of the code contained in the different projects I work on.
+It is to demonstrate my skills on the technologies I use on a daily basis. The repositories will contain only some of the code contained in the different projects I work on. The whole solution has been entirely developed by myself.
 I would appreciate feedbacks from experienced developers regarding the code, the architecture or different design patterns.
 
 # Structure of the solution
   -	MainIntranetApp : main service accessible through AD authentication and a browser for end users (colleagues)
   -	CompanyDbUpdate: run on the server daily to update the company database
   
-	    Use the two following internal web APIs for the update: CompanyDbWebAPI, ThirdPartyDbWebAPI
+	    Use the two following web APIs for the update: CompanyDbWebAPI, ThirdPartyDbWebAPI
 
-  -	CompanyDbWebAPI: internal web API hosted on the server to CRUD the company data base
+  -	CompanyDbWebAPI: web API hosted on the server to CRUD the company data base
   
-	     Also defines the structure of the company data base via entity framework code first
+	     This project also defines the structure of the company data base via entity framework code first
   -	ThirdPartyDbWebAPI: internal web API hosted on the server to extract information from the third party booking system’s database
 
 
@@ -27,7 +27,7 @@ The solution was to use the browser to view data and charts. It became an intran
 
 
 # MainIntranetApp data sources
-The first data source is from the Thirdparty booking system’s database. I use Entity framework from this existing database which generate the edmx model and the necessary entity classes.
+The first data source is from the third party booking system’s database. I use Entity framework from this existing database which generate the .edmx model and the necessary entity classes.
 
 To avoid conflict with the previous Entity framework model, I used the second data source which is the solution database through a Web API defined on a separate project: CompanyDbWebAPI.
 
