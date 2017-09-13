@@ -1,0 +1,733 @@
+@model Reporting_application.ReportingModels.BookingsStagesAnalysis
+
+
+
+@using Reporting_application.ReportingModels
+@using Reporting_application.Utilities.CompanyDefinition
+@using Reporting_application.Repository.ThirdpartyDB
+
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+
+<script>
+
+    $(document).ready(function () {
+        $(".datepicker").datepicker({ format: 'dd/mm/yyyy', autoclose: true, todayBtn: 'linked' })
+    });
+
+
+
+@*Popover initialization*@
+    $(document).ready(function () {
+        $('[data-toggle="popover"]').popover();
+    });
+
+
+    $('div.container.body-content').css('min-width', '1550px');
+
+
+</script>
+
+
+
+
+
+
+<div class="container">
+    <div class="well">
+        <h1 class="text-success text-center">Bookings Overview visual analysis</h1>
+    </div>
+</div>
+
+
+<div class="page-header"></div>
+
+<div class="container-fluid">
+    <div class="panel panel-primary">
+        <div class="panel-heading text-center">
+            <h2>Select your parameters</h2>
+            <p>The period you will select will add all the bookings entered and all the bookings sent/confirmed/cancelled during this period </p>
+        </div>
+        <div class="panel-body">
+            @{
+                Html.BeginForm();
+                {
+
+                    <div class="col-md-2">
+                        <p>Beginning date</p>
+                        <input type="text" id="fromDate" class="datepicker" value=@ViewData["BeginningTF"] name="BeginningTF" />
+                    </div>
+                    <div class="col-md-2">
+                        <p>End date</p>
+                        <input type="text" id="toDate" class="datepicker" value=@ViewData["EndTF"] name="EndTF" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <p>Departments</p>
+                        <select name="Dpt">
+                            <option value=@ViewData["DeptSelected"]>@ViewData["DeptSelected"]</option>
+
+                            @foreach (var k in Model.compSpec.DptsList.Keys)
+                            {
+                                if (!string.Equals(@ViewData["DeptSelected"], k))
+                                {
+                                    <option value=@Html.DisplayFor(modelItem => k)>@Html.DisplayFor(modelItem => k)</option>
+                                }
+                            }
+
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <p>Booking types</p>
+                        <select name="bkgsTypes">
+                            <option value=@ViewData["bkgTypeSelected"]>@ViewData["bkgTypeSelected"]</option>
+                            @{
+                                foreach (var bt in Model.compSpec.bookingTypes.Keys)
+                                {
+                                    if (!string.Equals(@ViewData["bkgTypeSelected"], bt))
+                                    {
+                                        <option value=@Html.DisplayFor(modelItem => bt)>@Html.DisplayFor(modelItem => bt)</option>
+                                    }
+                                }
+                            }
+                        </select>
+                    </div>
+
+
+                    <div class="col-md-3">
+                        <br />
+                        <button type="submit" class="btn btn-primary" id="Submit1" value="submit">
+                            Click here to Display Charts
+                        </button>
+                    </div>
+
+                                }
+            }
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+<br />
+<br />
+
+<div class="container-fluid">
+    <h2 class="text-center text-primary">Offers received general overview</h2>
+    <ul class="nav nav-pills">
+        <li class="active"><a data-toggle="pill" href="#home">Departmental</a></li>
+        <li><a data-toggle="pill" href="#menu1">Clients</a></li>
+        <li><a data-toggle="pill" href="#menu2">Year on Year comparison</a></li>
+    </ul>
+
+    <div class="tab-content">
+        <div id="home" class="tab-pane fade in active">
+            <div class="panel panel-primary">
+                <div class="panel-body">
+
+                    @{
+                        ChartDisplayed cd = Model.ListChartsCreated.Where(c => c.CP.at == analysisType.departmentName).Where(c => c.CP.bs == bookingStage.received).Where(c => c.CP.vd == valueDisplayed.bookingsAmount).FirstOrDefault();
+                        string s2 = "/BkgsOverview/RenderChartImage?ChartId=" + cd.ChartId;
+                    }
+                    <a href="javascript://" title=@cd.PopElem.title data-placement="bottom" data-toggle="popover" data-trigger="focus" data-html="true" data-content=@cd.PopElem.content>
+                        <img src=@s2 style="width: 80%; height: 80%" title=@cd.PopElem.title />
+                    </a>
+
+                </div>
+            </div>
+
+        </div>
+        <div id="menu1" class="tab-pane fade">
+            <div class="panel panel-primary">
+                <div class="panel-body">
+
+                    @{
+                        cd = Model.ListChartsCreated.Where(c => c.CP.at == analysisType.clientName).Where(c => c.CP.bs == bookingStage.received).Where(c => c.CP.vd == valueDisplayed.bookingsAmount).FirstOrDefault();
+                        s2 = "/BkgsOverview/RenderChartImage?ChartId=" + cd.ChartId;
+                    }
+                    <a href="javascript://" title=@cd.PopElem.title data-placement="bottom" data-toggle="popover" data-trigger="focus" data-html="true" data-content=@cd.PopElem.content>
+                        <img src=@s2 style="width: 80%; height: 80%" title=@cd.PopElem.title />
+                    </a>
+
+                </div>
+            </div>
+        </div>
+        <div id="menu2" class="tab-pane fade">
+            <div class="panel panel-primary">
+                <div class="panel-body">
+                    <div class="row">
+                        @{
+                            int ChId = Model.ListChartsCreated.Where(c => c.CP.at == analysisType.YearOnYear).Where(c => c.CP.bs == bookingStage.received).Where(c => c.CP.vd == valueDisplayed.bookingsAmount).FirstOrDefault().ChartId;
+                            s2 = "/BkgsOverview/RenderChartImage?ChartId=" + ChId;
+                        <img src=@s2 style="width: 100%; height: 100%" title="Offers received" />
+                        }
+                    </div>
+                    <div class="row">
+                        @{
+                            ChId = Model.ListChartsCreated.Where(c => c.CP.at == analysisType.YearOnYearCumulative).Where(c => c.CP.bs == bookingStage.received).Where(c => c.CP.vd == valueDisplayed.bookingsAmount).FirstOrDefault().ChartId;
+                            s2 = "/BkgsOverview/RenderChartImage?ChartId=" + ChId;
+                        <img src=@s2 style="width: 100%; height: 100%" title="Offers received cumulative" />
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<br />
+<br />
+
+
+<div class="container-fluid">
+    <div class="panel-group" id="accordion">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h4 class="panel-title text-center">
+                    <a data-toggle="collapse" data-parent="#accordion" href="#collapse3">Estimated Turnovers: Location analysis</a>
+                </h4>
+            </div>
+            <div id="collapse3" class="panel-collapse collapse">
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            @{
+                                string t = "Offers still at the Sent stage: £" + string.Format("{0:#,##0}", Model.ListChartsCreated.Where(c => c.CP.at == analysisType.location).Where(c => c.CP.bs == bookingStage.sent).Where(c => c.CP.vd == valueDisplayed.turnover).FirstOrDefault().Total);
+                            }
+                            @t
+                        </div>
+                        <div class="col-md-4 text-center">
+                            @{
+                                t = "Offers Confirmed: £" + string.Format("{0:#,##0}", Model.ListChartsCreated.Where(c => c.CP.at == analysisType.location).Where(c => c.CP.bs == bookingStage.confirmed).Where(c => c.CP.vd == valueDisplayed.turnover).FirstOrDefault().Total);
+                            }
+                            @t
+                        </div>
+                        <div class="col-md-4 text-center">
+                            @{
+                                t = "Offers Cancelled: £" + string.Format("{0:#,##0}", Model.ListChartsCreated.Where(c => c.CP.at == analysisType.location).Where(c => c.CP.bs == bookingStage.cancelled).Where(c => c.CP.vd == valueDisplayed.turnover).FirstOrDefault().Total);
+                            }
+                            @t
+                        </div>
+                    </div>
+
+                    <div class="row">
+
+                        @for (int iBS = 1; iBS < 4; iBS++)
+                        {
+                            cd = Model.ListChartsCreated.Where(c => c.CP.at == analysisType.location).Where(c => c.CP.bs == (bookingStage)iBS).Where(c => c.CP.vd == valueDisplayed.turnover).FirstOrDefault();
+
+                            s2 = "/BkgsOverview/RenderChartImage?ChartId=" + cd.ChartId;
+                            <a href="javascript://" title=@cd.PopElem.title data-placement="bottom" data-toggle="popover" data-trigger="focus" data-html="true" data-content=@cd.PopElem.content>
+                                <img src=@s2 style="width: 33%; height: 33%" title=@cd.PopElem.title />
+                            </a>
+                        }
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h4 class="panel-title text-center">
+                    <a data-toggle="collapse" data-parent="#accordion" href="#collapse4">Estimated Turnovers: Clients Category analysis</a>
+                </h4>
+            </div>
+            <div id="collapse4" class="panel-collapse collapse">
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            @{
+                                t = "Offers still at the Sent stage: £" + string.Format("{0:#,##0}", Model.ListChartsCreated.Where(c => c.CP.at == analysisType.clientCategory).Where(c => c.CP.bs == bookingStage.sent).Where(c => c.CP.vd == valueDisplayed.turnover).FirstOrDefault().Total);
+                            }
+                            @t
+                        </div>
+                        <div class="col-md-4 text-center">
+                            @{
+                                t = "Offers Confirmed: £" + string.Format("{0:#,##0}", Model.ListChartsCreated.Where(c => c.CP.at == analysisType.clientCategory).Where(c => c.CP.bs == bookingStage.confirmed).Where(c => c.CP.vd == valueDisplayed.turnover).FirstOrDefault().Total);
+                            }
+                            @t
+                        </div>
+                        <div class="col-md-4 text-center">
+                            @{
+                                t = "Offers Cancelled: £" + string.Format("{0:#,##0}", Model.ListChartsCreated.Where(c => c.CP.at == analysisType.clientCategory).Where(c => c.CP.bs == bookingStage.cancelled).Where(c => c.CP.vd == valueDisplayed.turnover).FirstOrDefault().Total);
+                            }
+                            @t
+                        </div>
+                    </div>
+                    <div class="row">
+
+                        @for (int iBS = 1; iBS < 4; iBS++)
+                        {
+                            cd = Model.ListChartsCreated.Where(c => c.CP.at == analysisType.clientCategory).Where(c => c.CP.bs == (bookingStage)iBS).Where(c => c.CP.vd == valueDisplayed.turnover).FirstOrDefault();
+
+                            s2 = "/BkgsOverview/RenderChartImage?ChartId=" + cd.ChartId;
+                            <a href="javascript://" title=@cd.PopElem.title data-placement="bottom" data-toggle="popover" data-trigger="focus" data-html="true" data-content=@cd.PopElem.content>
+                                <img src=@s2 style="width: 33%; height: 33%" title=@cd.PopElem.title />
+                            </a>
+                        }
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h4 class="panel-title text-center">
+                    <a data-toggle="collapse" data-parent="#accordion" href="#collapse5">Estimated Turnovers: Clients analysis</a>
+                </h4>
+            </div>
+            <div id="collapse5" class="panel-collapse collapse">
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            @{
+                                t = "Offers still at the Sent stage: £" + string.Format("{0:#,##0}", Model.ListChartsCreated.Where(c => c.CP.at == analysisType.clientName).Where(c => c.CP.bs == bookingStage.sent).Where(c => c.CP.vd == valueDisplayed.turnover).FirstOrDefault().Total);
+                            }
+                            @t
+                        </div>
+                        <div class="col-md-4 text-center">
+                            @{
+                                t = "Offers Confirmed: £" + string.Format("{0:#,##0}", Model.ListChartsCreated.Where(c => c.CP.at == analysisType.clientName).Where(c => c.CP.bs == bookingStage.confirmed).Where(c => c.CP.vd == valueDisplayed.turnover).FirstOrDefault().Total);
+                            }
+                            @t
+                        </div>
+                        <div class="col-md-4 text-center">
+                            @{
+                                t = "Offers Cancelled: £" + string.Format("{0:#,##0}", Model.ListChartsCreated.Where(c => c.CP.at == analysisType.clientName).Where(c => c.CP.bs == bookingStage.cancelled).Where(c => c.CP.vd == valueDisplayed.turnover).FirstOrDefault().Total);
+                            }
+                            @t
+                        </div>
+                    </div>
+                    <div class="row">
+
+                        @for (int iBS = 1; iBS < 4; iBS++)
+                        {
+                            cd = Model.ListChartsCreated.Where(c => c.CP.at == analysisType.clientName).Where(c => c.CP.bs == (bookingStage)iBS).Where(c => c.CP.vd == valueDisplayed.turnover).FirstOrDefault();
+
+                            s2 = "/BkgsOverview/RenderChartImage?ChartId=" + cd.ChartId;
+                            <a href="javascript://" title=@cd.PopElem.title data-placement="bottom" data-toggle="popover" data-trigger="focus" data-html="true" data-content=@cd.PopElem.content>
+                                <img src=@s2 style="width: 33%; height: 33%" title=@cd.PopElem.title />
+                            </a>
+                        }
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h4 class="panel-title text-center">
+                    <a data-toggle="collapse" data-parent="#accordion" href="#collapse6">
+                        @{
+                            double total = Model.ListChartsCreated.Where(c => c.CP.at == analysisType.clientName).Where(c => c.CP.bs == bookingStage.received).Where(c => c.CP.vd == valueDisplayed.bookingsAmount).FirstOrDefault().Total;
+                            t = "Received between " + ViewData["BeginningTF"] + "and " + ViewData["EndTF"] + ": " + total;
+                        }
+                        @t
+                    </a>
+                </h4>
+            </div>
+            <div id="collapse6" class="panel-collapse collapse">
+                <div class="panel-body">
+                    <div class="row">
+
+                        @for (int iAT = 2; iAT < 5; iAT++)
+                        {
+                            cd = Model.ListChartsCreated.Where(c => c.CP.at == (analysisType)iAT).Where(c => c.CP.bs == bookingStage.received).Where(c => c.CP.vd == valueDisplayed.bookingsAmount).FirstOrDefault();
+
+                            s2 = "/BkgsOverview/RenderChartImage?ChartId=" + cd.ChartId;
+                            <a href="javascript://" title=@cd.PopElem.title data-placement="bottom" data-toggle="popover" data-trigger="focus" data-html="true" data-content=@cd.PopElem.content>
+                                <img src=@s2 style="width: 33%; height: 33%" title=@cd.PopElem.title />
+                            </a>
+                        }
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h4 class="panel-title text-center">
+                    <a data-toggle="collapse" data-parent="#accordion" href="#collapse7">
+                        @{
+                            total = Model.ListChartsCreated.Where(c => c.CP.at == analysisType.location).Where(c => c.CP.bs == bookingStage.sent).Where(c => c.CP.vd == valueDisplayed.bookingsAmount).FirstOrDefault().Total;
+                            t = "Sent between " + ViewData["BeginningTF"] + "and " + ViewData["EndTF"] + " and still at that stage: " + total;
+                        }
+                        @t
+                    </a>
+                </h4>
+            </div>
+            <div id="collapse7" class="panel-collapse collapse">
+                <div class="panel-body">
+                    <div class="row">
+
+                        @for (int iAT = 2; iAT < 5; iAT++)
+                        {
+                            cd = Model.ListChartsCreated.Where(c => c.CP.at == (analysisType)iAT).Where(c => c.CP.bs == bookingStage.sent).Where(c => c.CP.vd == valueDisplayed.bookingsAmount).FirstOrDefault();
+
+                            s2 = "/BkgsOverview/RenderChartImage?ChartId=" + cd.ChartId;
+                            <a href="javascript://" title=@cd.PopElem.title data-placement="bottom" data-toggle="popover" data-trigger="focus" data-html="true" data-content=@cd.PopElem.content>
+                                <img src=@s2 style="width: 33%; height: 33%" title=@cd.PopElem.title />
+                            </a>
+                        }
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h4 class="panel-title text-center">
+                    <a data-toggle="collapse" data-parent="#accordion" href="#collapse8">
+                        @{
+                            total = Model.ListChartsCreated.Where(c => c.CP.at == analysisType.location).Where(c => c.CP.bs == bookingStage.confirmed).Where(c => c.CP.vd == valueDisplayed.bookingsAmount).FirstOrDefault().Total;
+                            t = "Confirmed between " + ViewData["BeginningTF"] + "and " + ViewData["EndTF"] + ": " + total;
+                        }
+                        @t
+                    </a>
+                </h4>
+            </div>
+            <div id="collapse8" class="panel-collapse collapse">
+                <div class="panel-body">
+                    <div class="row">
+                        @{
+                            for (int iAT = 2; iAT < 5; iAT++)
+                            {
+                                cd = Model.ListChartsCreated.Where(c => c.CP.at == (analysisType)iAT).Where(c => c.CP.bs == bookingStage.confirmed).Where(c => c.CP.vd == valueDisplayed.bookingsAmount).FirstOrDefault();
+
+                                s2 = "/BkgsOverview/RenderChartImage?ChartId=" + cd.ChartId;
+                                <a href="javascript://" title=@cd.PopElem.title data-placement="bottom" data-toggle="popover" data-trigger="focus" data-html="true" data-content=@cd.PopElem.content>
+                                    <img src=@s2 style="width: 33%; height: 33%" title=@cd.PopElem.title />
+                                </a>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h4 class="panel-title text-center">
+                    <a data-toggle="collapse" data-parent="#accordion" href="#collapse9">
+                        @{
+                            total = Model.ListChartsCreated.Where(c => c.CP.at == analysisType.location).Where(c => c.CP.bs == bookingStage.cancelled).Where(c => c.CP.vd == valueDisplayed.bookingsAmount).FirstOrDefault().Total;
+                            t = "Cancelled between " + ViewData["BeginningTF"] + "and " + ViewData["EndTF"] + ": " + total;
+                        }
+                        @t
+                    </a>
+                </h4>
+            </div>
+            <div id="collapse9" class="panel-collapse collapse">
+                <div class="panel-body">
+                    <div class="row">
+
+                        @for (int iAT = 2; iAT < 5; iAT++)
+                        {
+                            cd = Model.ListChartsCreated.Where(c => c.CP.at == (analysisType)iAT).Where(c => c.CP.bs == bookingStage.cancelled).Where(c => c.CP.vd == valueDisplayed.bookingsAmount).FirstOrDefault();
+
+                            s2 = "/BkgsOverview/RenderChartImage?ChartId=" + cd.ChartId;
+                            <a href="javascript://" title=@cd.PopElem.title data-placement="bottom" data-toggle="popover" data-trigger="focus" data-html="true" data-content=@cd.PopElem.content>
+                                <img src=@s2 style="width: 33%; height: 33%" title=@cd.PopElem.title />
+                            </a>
+                        }
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h4 class="panel-title text-center">
+                    <a data-toggle="collapse" data-parent="#accordion" href="#collapse10">
+                        @{
+                            total = Model.ListChartsCreated.Where(c => c.CP.at == analysisType.location).Where(c => c.CP.bs == bookingStage.pending).Where(c => c.CP.vd == valueDisplayed.bookingsAmount).FirstOrDefault().Total;
+                            t = "Pending Offers: " + total;
+                        }
+                        @t
+                    </a>
+                </h4>
+            </div>
+            <div id="collapse10" class="panel-collapse collapse">
+                <div class="panel-body">
+
+                    @for (int iAT = 2; iAT < 6; iAT++)
+                    {
+                        cd = Model.ListChartsCreated.Where(c => c.CP.at == (analysisType)iAT).Where(c => c.CP.bs == bookingStage.pending).Where(c => c.CP.vd == valueDisplayed.bookingsAmount).FirstOrDefault();
+
+
+                        s2 = "/BkgsOverview/RenderChartImage?ChartId=" + cd.ChartId;
+                        <a href="javascript://" title=@cd.PopElem.title data-placement="bottom" data-toggle="popover" data-trigger="focus" data-html="true" data-content=@cd.PopElem.content>
+                            <img src=@s2 style="width: 49%; height: 49%" title=@cd.PopElem.title />
+                        </a>
+                    }
+
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h4 class="panel-title text-center">
+                    <a data-toggle="collapse" data-parent="#accordion" href="#collapse11">
+                        @{
+                            total = Model.ListChartsCreated.Where(c => c.CP.at == analysisType.location).Where(c => c.CP.bs == bookingStage.pendingPastDeadline).Where(c => c.CP.vd == valueDisplayed.bookingsAmount).FirstOrDefault().Total;
+                            t = "Pending Offers past deadline: " + total;
+                        }
+                        @t
+                    </a>
+                </h4>
+            </div>
+            <div id="collapse11" class="panel-collapse collapse">
+                <div class="panel-body">
+                    <div class="row">
+
+                        @for (int iAT = 2; iAT < 4; iAT++)
+                        {
+                            cd = Model.ListChartsCreated.Where(c => c.CP.at == (analysisType)iAT).Where(c => c.CP.bs == bookingStage.pendingPastDeadline).Where(c => c.CP.vd == valueDisplayed.bookingsAmount).FirstOrDefault();
+
+                            s2 = "/BkgsOverview/RenderChartImage?ChartId=" + cd.ChartId;
+                            <a href="javascript://" title=@cd.PopElem.title data-placement="bottom" data-toggle="popover" data-trigger="focus" data-html="true" data-content=@cd.PopElem.content>
+                                <img src=@s2 style="width: 49%; height: 49%" title=@cd.PopElem.title />
+                            </a>
+                        }
+
+                    </div>
+                    <div class="row">
+
+                        @for (int iAT = 4; iAT < 6; iAT++)
+                        {
+                            cd = Model.ListChartsCreated.Where(c => c.CP.at == (analysisType)iAT).Where(c => c.CP.bs == bookingStage.pendingPastDeadline).Where(c => c.CP.vd == valueDisplayed.bookingsAmount).FirstOrDefault();
+
+                            s2 = "/BkgsOverview/RenderChartImage?ChartId=" + cd.ChartId;
+                            <a href="javascript://" title=@cd.PopElem.title data-placement="bottom" data-toggle="popover" data-trigger="focus" data-html="true" data-content=@cd.PopElem.content>
+                                <img src=@s2 style="width: 49%; height: 49%" title=@cd.PopElem.title />
+                            </a>
+
+                        }
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h4 class="panel-title text-center">
+                    <a data-toggle="collapse" data-parent="#accordion" href="#collapse12">
+                        @{
+                            total = Model.ListChartsCreated.Where(c => c.CP.at == analysisType.location).Where(c => c.CP.bs == bookingStage.pendingSalesBDOPS).Where(c => c.CP.vd == valueDisplayed.bookingsAmount).FirstOrDefault().Total;
+                            t = "Pending Offers past deadline with Sales/BD Ops: " + total;
+                        }
+                        @t
+                    </a>
+                </h4>
+            </div>
+            <div id="collapse12" class="panel-collapse collapse">
+                <div class="panel-body">
+                    @for (int iAT = 2; iAT < 5; iAT++)
+                    {
+                        cd = Model.ListChartsCreated.Where(c => c.CP.at == (analysisType)iAT).Where(c => c.CP.bs == bookingStage.pendingSalesBDOPS).Where(c => c.CP.vd == valueDisplayed.bookingsAmount).FirstOrDefault();
+
+                        s2 = "/BkgsOverview/RenderChartImage?ChartId=" + cd.ChartId;
+                        <a href="javascript://" title=@cd.PopElem.title data-placement="bottom" data-toggle="popover" data-trigger="focus" data-html="true" data-content=@cd.PopElem.content>
+                            <img src=@s2 style="width: 33%; height: 33%" title=@cd.PopElem.title />
+                        </a>
+
+                    }
+
+                    <br />
+                    <div class="panel panel-primary">
+                        <div class="panel-body">
+                            <div class="row">
+                                @{
+                                    cd = Model.ListChartsCreated.Where(c => c.CP.at == analysisType.BDconsultant).Where(c => c.CP.bs == bookingStage.pendingSalesBDOPSFirstQuote).Where(c => c.CP.vd == valueDisplayed.bookingsAmount).FirstOrDefault();
+                                    string _title = "First Quote total : " + cd.Total;
+                                    s2 = "/BkgsOverview/RenderChartImage?ChartId=" + cd.ChartId;
+                                }
+                                <div class="col-md-6 text-center">
+                                    @_title
+                                </div>
+
+                                @{
+                                    cd = Model.ListChartsCreated.Where(c => c.CP.at == analysisType.BDconsultant).Where(c => c.CP.bs == bookingStage.pendingSalesBDOPSRequote).Where(c => c.CP.vd == valueDisplayed.bookingsAmount).FirstOrDefault();
+                                    s2 = "/BkgsOverview/RenderChartImage?ChartId=" + cd.ChartId;
+                                    _title = "ReQuote total : " + cd.Total;
+                                }
+                                <div class="col-md-6 text-center">
+                                    @_title
+                                </div>
+                            </div>
+                            <div class="row>">
+                                @for (int iAT = 9; iAT > 7; iAT--)
+                                {
+                                    cd = Model.ListChartsCreated.Where(c => c.CP.at == analysisType.BDconsultant).Where(c => c.CP.bs == (bookingStage)iAT).Where(c => c.CP.vd == valueDisplayed.bookingsAmount).FirstOrDefault();
+                                    _title = "First Quote total : " + cd.Total;
+                                    s2 = "/BkgsOverview/RenderChartImage?ChartId=" + cd.ChartId;
+
+                                    <a href="javascript://" title=@cd.PopElem.title data-placement="bottom" data-toggle="popover" data-trigger="focus" data-html="true" data-content=@cd.PopElem.content>
+                                        @*<p class="text-center">@_title</p>*@
+                                        <img src=@s2 style="width: 49%; height: 49%" title=@cd.PopElem.title />
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h4 class="panel-title text-center">
+                    <a data-toggle="collapse" data-parent="#accordion" href="#collapse13">
+                        @{
+                            total = Model.ListChartsCreated.Where(c => c.CP.at == analysisType.location).Where(c => c.CP.bs == bookingStage.pendingContract).Where(c => c.CP.vd == valueDisplayed.bookingsAmount).FirstOrDefault().Total;
+                            t = "Pending Offers past deadline in Contracting process: " + total;
+                        }
+                        @t
+                    </a>
+                </h4>
+            </div>
+            <div id="collapse13" class="panel-collapse collapse">
+                <div class="panel-body">
+                    <div class="row">
+
+                        @for (int iAT = 2; iAT < 4; iAT++)
+                        {
+                            cd = Model.ListChartsCreated.Where(c => c.CP.at == (analysisType)iAT).Where(c => c.CP.bs == bookingStage.pendingContract).Where(c => c.CP.vd == valueDisplayed.bookingsAmount).FirstOrDefault();
+                            s2 = "/BkgsOverview/RenderChartImage?ChartId=" + cd.ChartId;
+                            <a href="javascript://" title=@cd.PopElem.title data-placement="bottom" data-toggle="popover" data-trigger="focus" data-html="true" data-content=@cd.PopElem.content>
+                                <img src=@s2 style="width: 33%; height: 33%" title=@cd.PopElem.title />
+                            </a>
+                        }
+
+                        @*Analysis per consultant (not BD Consultant)*@
+                        @{
+                            cd = Model.ListChartsCreated.Where(c => c.CP.at == analysisType.consultant).Where(c => c.CP.bs == bookingStage.pendingContract).Where(c => c.CP.vd == valueDisplayed.bookingsAmount).FirstOrDefault();
+                            s2 = "/BkgsOverview/RenderChartImage?ChartId=" + cd.ChartId;
+                        }
+                        <a href="javascript://" title=@cd.PopElem.title data-placement="bottom" data-toggle="popover" data-trigger="focus" data-html="true" data-content=@cd.PopElem.content>
+                            <img src=@s2 style="width: 33%; height: 33%" title=@cd.PopElem.title />
+                        </a>
+
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<br />
+<br />
+
+
+<script>
+    $(document).ready(function () {
+        $("#b1").click(function () {
+            $("#RawData").collapse('toggle');
+        });
+        $("#b2").click(function () {
+            $("#RawData2").collapse('toggle');
+        });
+    });
+</script>
+
+
+
+<div class="container">
+    <button type="button" id="b1" class="btn btn-info">Bookings Data Timeframe only</button>
+    <div id="RawData" class="collapse">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    @{
+                        System.Reflection.PropertyInfo[] propInfo = typeof(BkgAnalysisInfo).GetProperties();
+                        foreach (var p in propInfo)
+                        {
+                    <th>@p.Name</th>
+                        }
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (BkgAnalysisInfo b in Model.BkgsSelectedInView)
+                {
+                <tr>
+                    @foreach (var p in propInfo)
+                        {
+                            var v = p.GetValue(b);
+                        <td>@v</td>
+                        }
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<br />
+<div class="container">
+    <button type="button" id="b2" class="btn btn-info">Bookings Data pending offers</button>
+    <div id="RawData2" class="collapse">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    @foreach (var p in propInfo)
+                    {
+                    <th>@p.Name</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    // retrieve the chart used for data validation
+                    IEnumerable<BkgAnalysisInfo> BkgsTest = Model.ListChartsCreated.Where(c => c.CP.at == analysisType.location).Where(c => c.CP.bs == bookingStage.pending).Where(c => c.CP.vd == valueDisplayed.bookingsAmount).FirstOrDefault().BkgsSelectedForChart;
+
+                }
+                @foreach (BkgAnalysisInfo b in BkgsTest)
+            {
+                <tr>
+                    @foreach (var p in propInfo)
+                        {
+                            var v = p.GetValue(b);
+                        <td>@v</td>
+                        }
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+
+<br />
+
+<div class="container">
+    <a href="/BkgsOverview/ExportToExcel2" target="_blank">
+        <div class="well text-success text-center">
+            <span class="glyphicon glyphicon-random "></span><span class="glyphicon glyphicon-asterisk "></span><span class="glyphicon glyphicon-bell "></span> Export data to Excel <span class="glyphicon glyphicon-bell "></span><span class="glyphicon glyphicon-asterisk "></span><span class="glyphicon glyphicon-random "></span>
+        </div>
+    </a>
+</div>
+
+
+
+
+
