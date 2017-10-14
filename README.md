@@ -5,14 +5,14 @@ I would appreciate feedbacks from experienced developers regarding the code, the
 
 # Structure of the solution
   -	MainIntranetApp : main service accessible through AD authentication and a browser for end users (colleagues)
-  -	CompanyDbUpdate: run on the server daily to update the company database
+  -	CompanyDbUpdate: runs on the server daily to update the company database
   
 	    Use the two following web APIs for the update: CompanyDbWebAPI, ThirdPartyDbWebAPI
 
   -	CompanyDbWebAPI: web API hosted on the server to CRUD the company data base
   
 	     This project also defines the structure of the company data base via entity framework code first
-  -	ThirdPartyDbWebAPI: internal web API hosted on the server to extract information from the third party booking system’s database
+  -	ThirdPartyDbWebAPI: web API hosted on the server to extract information from the third party booking system’s database
 
 
 # Origin
