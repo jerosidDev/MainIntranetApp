@@ -15,7 +15,7 @@ namespace Reporting_application.Repository
 
     public class CompanyDBRepository : ICompanyDBRepository
     {
-        private const string compDBapi = "http://192.168.75.27:83/api/";
+        private const string compDBapi = "http://111.111.11.11:13/api/";
 
         public IEnumerable<BStage> listBStage { get; protected set; }
 
