@@ -27,8 +27,8 @@ The solution was to use the browser to view data and charts. It became an intran
 
 
 # MainIntranetApp data sources
-The first data source is from the third party booking system’s database. I use Entity framework from this existing database which generate the .edmx model and the necessary entity classes.
+The first data source is from the third party booking system’s database. I use Entity framework from an existing database which generate the .edmx model and the necessary entity classes. These and the db context will not be shown in this repository, only their uses in this project will be shown. 
 
-To avoid conflict with the previous Entity framework model, I used the second data source which is the solution database through a Web API defined on a separate project: CompanyDbWebAPI.
+To avoid conflict with the previous Entity framework model, I used the second data source which is the solution's database through a Web API defined on a separate project: CompanyDbWebAPI.
 
   
