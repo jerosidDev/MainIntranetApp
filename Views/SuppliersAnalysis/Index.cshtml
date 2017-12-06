@@ -1,0 +1,191 @@
+﻿
+@using System.Collections.Generic;
+@using System.Linq;
+
+
+
+@{
+    ViewBag.Title = "Suppliers Analysis";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<link href="~/Content/SuppliersAnalysis/IndexView.min.css" rel="stylesheet" />
+
+
+@section LeftFilter {
+
+    <div class="panel panel-primary affix" id="ParametersPanel">
+
+        <div class="panel panel-heading">
+            <h3 class="text-center">Filter selection</h3>
+        </div>
+
+
+        <div class="panel panel-body">
+
+
+            <div class="panel panel-danger">
+                <div class="panel panel-heading">
+                    Evaluation type:
+                </div>
+                <div class="well well-sm">
+                    @{
+                        var evalItems = ViewData["EvaluationType"] as Dictionary<string, string>;
+                    }
+                    @Html.DropDownList("EvaluationType", evalItems.Select(ei => new SelectListItem() { Value = ei.Key, Text = ei.Value }))
+
+                </div>
+
+            </div>
+
+
+            <div class="panel panel-info" id="narrowBy">
+                <div class="panel panel-heading">
+                    Narrow by:
+                    <button type="button" id="resetFilter" class="btn btn-warning  pull-right">Reset filter</button>
+                </div>
+
+
+                @{
+                    var filterVal = ViewData["FilterVal"] as Dictionary<string, Dictionary<string, string>>;
+
+                    foreach (var kvp in filterVal)
+                    {
+                        List<SelectListItem> sli = kvp.Value
+                            .Select(d => new SelectListItem() { Value = d.Key, Text = d.Value })
+                            .ToList();
+
+                        sli.Insert(0, new SelectListItem() { Value = "All", Text = "All" });
+
+                        var labelTitle = @kvp.Key.Replace('_', ' ');
+
+                        <div class="well well-sm">
+                            @Html.Label(@labelTitle, @labelTitle)
+                            @Html.DropDownList(@kvp.Key, sli, new { @class = "form-control" })
+                        </div>
+
+                    }
+
+
+                }
+
+
+
+            </div>
+
+
+
+
+
+            <div class="panel panel-info">
+                <div class="panel panel-heading">Booking stages</div>
+                <ul>
+                    @foreach (var ss in ViewData["StagesStatuses"] as Dictionary<string, List<string>>)
+                    {
+                        <li class=@ss.Key>
+                            <label>
+                                <input type="checkbox" id=@ss.Key /> @ss.Key
+                            </label>
+                            <ul>
+                                Booking status:
+                                @foreach (var s in ss.Value)
+                                {
+                                    <li>@s</li>
+                                }
+                            </ul>
+                        </li>
+                    }
+                </ul>
+            </div>
+
+
+            <div class="panel panel-info">
+                <div class="panel panel-heading">Period view</div>
+                <div class="well">
+                    Financial years:
+                    <ul>
+                        
+                            @foreach (var fy in ViewData["FinancialYears"] as Dictionary<string, string>)
+                            {
+                                var chartTitle = fy.Value + "_financial_year";
+                                <li><input type="checkbox" checked="checked" chartTitle=@chartTitle id=@fy.Key />@fy.Value</li>
+                            }
+
+                    </ul>
+                </div>
+                <div class="well">
+                    <ul>
+                        Chart columns display:
+                        <li>
+                            <input type="radio" checked="checked" name="viewPeriod" id="radioMonthly"> Monthly
+                            <input type="radio" name="viewPeriod" id="radioWeekly"> Weekly
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+
+
+
+
+
+        </div>
+
+
+    </div>
+
+
+}
+
+
+<div class="container main-frame">
+
+
+    <div class="well well-lg text-center">
+        <h1>Suppliers Analysis</h1>
+    </div>
+
+
+    <div class="panel panel-primary">
+        <div class="panel panel-heading">
+            <h3 id="title1">Title of chart1 </h3>
+            <p>(click on a column to view data)</p>
+        </div>
+        <div class="panel panel-body">
+            <div id="Column_Period_Only"></div>
+        </div>
+    </div>
+
+    <div class="panel panel-primary">
+        <div class="panel panel-heading">
+            <h3 id="title2">Title of chart2 </h3>
+            <p>(drag to zoom , right-click to reset, click on a dot to display values, click on the same dot to hide values)</p>
+        </div>
+        <div class="panel panel-body">
+            <div id="Line_Cumulative"></div>
+        </div>
+    </div>
+
+    <div class="panel panel-primary">
+        <div class="panel panel-heading">
+            <h3>Year on year variations of the Top 300 suppliers and chains</h3>
+            <p id="title3"></p>
+            <p>(click on the table header to sort the data)</p>
+        </div>
+        <div class="panel panel-body">
+            <div id="Variation_Table"></div>
+        </div>
+    </div>
+
+
+
+</div>
+
+
+<script src="~/Scripts/moment.min.js"></script>
+<script src="~/Scripts/SuppliersAnalysis/UserInteraction.js"></script>
+
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script src="~/Scripts/SuppliersAnalysis/LoadGoogleCharts.js"></script>
+
