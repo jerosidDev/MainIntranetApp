@@ -1,5 +1,6 @@
-using ERAwebAPI.ModelsDB;
+﻿using CompanyDbWebAPI.ModelsDB;
 using System.Web.Script.Serialization;
+using System.Xml.Serialization;
 
 namespace Reporting_application.Services.Performance
 {
@@ -15,6 +16,7 @@ namespace Reporting_application.Services.Performance
         public int BSL_ID { get; set; }
         [ScriptIgnore]
         public string LocCode { get; set; }
+        [XmlIgnore]
         public ContractConsultant _contractConsultant { get; set; }
 
     }

@@ -1,4 +1,4 @@
-using ERAwebAPI.ModelsDB;
+﻿using CompanyDbWebAPI.ModelsDB;
 using Reporting_application.Repository;
 using Reporting_application.Repository.ThirdpartyDB;
 using Reporting_application.Utilities.CompanyDefinition;
@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Reporting_application.Services.Performance
 {
@@ -27,15 +28,43 @@ namespace Reporting_application.Services.Performance
         public Dictionary<string, IEnumerable<string>> dptCslAssociation { get; private set; }
 
 
-        public IList<string> dptList { get; private set; }
+        private IList<string> _dptList;
+        public IList<string> dptList
+        {
+            get
+            {
+                if (_dptList == null) _dptList = CompSpec.DptsList.Keys.ToList();
+                return _dptList;
+            }
+            set
+            {
+                _dptList = value;
+            }
+        }
 
-        public IDictionary<string, string> dictActiveConsult { get; set; }
+        private IDictionary<string, string> _dictActiveConsult;
+        public IDictionary<string, string> dictActiveConsult
+        {
+            get
+            {
+                if (_dictActiveConsult == null)
+                    _dictActiveConsult = tpRepo.GetRecentlyActiveConsultants();
+                return _dictActiveConsult;
+            }
+            set
+            {
+                _dictActiveConsult = value;
+            }
+        }
 
 
 
         public IEnumerable<ContractTBAsInfo> itemsVM { get; set; }
         public IEnumerable<ContractConsultant> CslTBAassignment { get; set; }
 
+
+
+        public IDictionary<string, string> dictActiveContractCsl { get; private set; }
 
 
         public Performance(ICompanyDBRepository _compDbRepo, IThirdpartyDBrepository _tpRepo)
@@ -58,15 +87,20 @@ namespace Reporting_application.Services.Performance
 
         }
 
-        public void RetrieveDptsAndConsultantFromFY17()
-        {
-            // return a list of the departments and consultants associated with all bookings entered from 01/02/2017
 
-            // retrieve the departments
-            dptList = CompSpec.DptsList.Keys.ToList();
-            // retrieve the consultants codes and their full name
-            dictActiveConsult = tpRepo.GetRecentlyActiveConsultants();
+
+        public async Task<IList<SentEnquiry>> CalculateSentEnquiriesAsync()
+        {
+            await compDbRepo.ExtractAllBStagesAsync();
+
+            //await tpRepo.GetAllConsultantsAsync();
+            IList<SentEnquiry> listSentEnquiries = await generateSentEnquiriesListAsync();
+
+            return listSentEnquiries;
+
         }
+
+
 
 
         public Dictionary<string, Dictionary<string, Dictionary<string, List<T>>>> EvalAllDepartments<T>(List<T> AllBookingsFiltered) where T : class, IPerformanceItems<T>
@@ -158,11 +192,17 @@ namespace Reporting_application.Services.Performance
 
             //   concerns : 
             //      I want to avoid having bedbanks
-            tpRepo.ExtractAllBookingsFromFY17();
-            IEnumerable<BHDmini> AllBHDminiFY17 = tpRepo.AllBookingsFromFY17
+            //tpRepo.ExtractAllBookingsFromFY17();
+            IEnumerable<BHDmini> AllBHDminiFY17 = tpRepo.AllBHDminiFromFY17
                 .Where(b => validStatus.Contains(b.STATUS.Trim()));
             IEnumerable<string> AllReferencesFromFY17 = AllBHDminiFY17
                 .Select(b => MinimiseRef(b.FULL_REFERENCE.Trim()));
+
+
+
+            // insert task for missing data
+
+
 
 
 
@@ -210,8 +250,7 @@ namespace Reporting_application.Services.Performance
                 .Where(se => FromDate <= se.DateSent && se.DateSent <= ToDate)
                       .Select(se =>
                       {
-                          BHDmini b = tpRepo.AllBookingsFromFY17
-                                          .FirstOrDefault(_b => MinimiseRef(_b.FULL_REFERENCE.Trim()) == MinimiseRef(se.FullReference.Trim()));
+                          BHDmini b = tpRepo.AllBHDminiFromFY17.FirstOrDefault(_b => _b.BHD_ID == se.BHD_ID);
                           se.SetDeadline(b, CompSpec);
                           return se;
                       })
@@ -224,8 +263,7 @@ namespace Reporting_application.Services.Performance
                 .Where(se => listGroupedOffers.Contains(se.FullReference)) // only accept the sent enquiries from groupedOffers (non dupplicates)
                 .Select(se =>
                 {
-                    BHDmini b = tpRepo.AllBookingsFromFY17
-                                    .FirstOrDefault(_b => MinimiseRef(_b.FULL_REFERENCE.Trim()) == MinimiseRef(se.FullReference.Trim()));
+                    BHDmini b = tpRepo.AllBHDminiFromFY17.FirstOrDefault(_b => _b.BHD_ID == se.BHD_ID);
                     se._tooltipColChart = new TooltipQuotedEnquiry(se, b);
                     return se;
                 })
@@ -248,8 +286,7 @@ namespace Reporting_application.Services.Performance
             List<SentEnquiry> AllContractEnquiries = listSentEnquiries
                    .Select(se =>
                    {
-                       BHDmini b = tpRepo.AllBookingsFromFY17
-                                       .FirstOrDefault(_b => MinimiseRef(_b.FULL_REFERENCE.Trim()) == MinimiseRef(se.FullReference.Trim()));
+                       BHDmini b = tpRepo.AllBHDminiFromFY17.FirstOrDefault(_b => _b.BHD_ID == se.BHD_ID);
                        return se.SwitchToContractEvaluation(b);
                    })
                    .ToList();
@@ -257,6 +294,173 @@ namespace Reporting_application.Services.Performance
 
 
         }
+
+
+
+        public async Task GeneratePerformanceSplitsAsync()
+        {
+
+            await tpRepo.GetAllConsultantsAsync();
+            var listSentEnquiriesTask = CalculateSentEnquiriesAsync();
+
+
+
+            string jsFromDate = "2017-05-01";
+            string jsToDate = DateTime.Today.AddDays(-1).ToString("yyyy-MM-dd");
+
+            DateTime FromDate = DateTime.ParseExact(jsFromDate, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+            DateTime ToDate = DateTime.ParseExact(jsToDate, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+            dictAllPerformance = new Dictionary<string, object>();
+
+
+            //  07/06/2017: remove the dupplicated offer for the conversion rate and the sent enquiries
+            //      definition of a dupplicatedOffer : a booking is part of a series defined by its first booking entered
+            //              the initial booking should remain for the evaluation , not the dupplicatedOffer
+            //              the dupplicatedOffer are kept for the missing data
+
+            //  16/06/2017:  booking references are compared by number and the branch
+
+
+            List<string> validStatus = CompSpec.BookingStageCodes[bookingStage.sent]
+                .Concat(CompSpec.BookingStageCodes[bookingStage.confirmed])
+                .Concat(CompSpec.BookingStageCodes[bookingStage.cancelled])
+                .Concat(CompSpec.BookingStageCodes[bookingStage.pending])
+                .ToList();
+
+
+            //  read all bookings entered in FY16
+            IEnumerable<string> AllBookingsReferencesFY16 = ExtractBookingRefFY16(validStatus);
+
+
+
+
+
+            //   concerns : 
+            //      I want to avoid having bedbanks
+
+            if (tpRepo.AllBHDminiFromFY17 == null) await tpRepo.ExtractAllBHDminiFromFY17Async();
+            IEnumerable<BHDmini> AllBHDminiFY17 = tpRepo.AllBHDminiFromFY17
+                .Where(b => validStatus.Contains(b.STATUS.Trim()));
+
+
+
+
+            IEnumerable<string> AllReferencesFromFY17 = AllBHDminiFY17
+                .Select(b => MinimiseRef(b.FULL_REFERENCE.Trim()));
+
+
+
+            // start missing data task
+            var ExtractMissingDataFromFY17Task = ExtractMissingDataFromFY17Async(MinimiseRef, AllBookingsReferencesFY16, AllBHDminiFY17, AllReferencesFromFY17);
+
+
+            // grouped offers
+            var GroupedOffers = AllBHDminiFY17
+                .GroupBy(b => b.UDTEXT1.Trim())
+                .Where(g => !AllBookingsReferencesFY16.Contains(MinimiseRef(g.Key)))  // remove the group if it belongs to FY16
+                .SelectMany(g =>
+                {
+                    string groupKey = MinimiseRef(g.Key);
+                    if (groupKey == "") return g; // if no offer reference , each element is treated as a group
+                    else if (AllReferencesFromFY17.Contains(groupKey)) // common enquiry from FY17
+                    {
+                        // if the group contains the reference return that reference
+                        // if not return null because the booking is either as "" or invalid reference
+                        return g.Where(b => MinimiseRef(b.FULL_REFERENCE.Trim()) == groupKey);
+                    }
+                    else   // invalid series reference -> returns the first booking entered, the rest is ignored
+                    {
+                        return g.OrderBy(b => b.DATE_ENTERED).Take(1);
+                    }
+                })
+                .ToList();
+
+
+
+            // conversion rate
+            List<BHDmini> EvaluatedForConversion = GroupedOffers
+                .Select(b =>
+                {
+                    b._tooltipColChart = new TooltipConversion(b);
+                    return b;
+                })
+                .ToList();
+            dictAllPerformance.Add("Conversion", EvalAllDepartments(EvaluatedForConversion));
+
+
+            // missing data
+            List<BHDmissingData> AllBHDmissingDataFY17 = (await ExtractMissingDataFromFY17Task).ToList();
+            dictAllPerformance.Add("MissingData", EvalAllDepartments(AllBHDmissingDataFY17));
+
+            // turnaround rate : Quoted enquiries and Contract enquiries
+
+            IList<SentEnquiry> listSentEnquiries = await listSentEnquiriesTask;
+            //listSentEnquiries = listSentEnquiries
+            //    .Where(se => FromDate <= se.DateSent && se.DateSent <= ToDate)
+            //          .Select(se =>
+            //          {
+            //              BHDmini b = tpRepo.AllBHDminiFromFY17.FirstOrDefault(_b => _b.BHD_ID == se.BHD_ID);
+            //              se.SetDeadline(b, CompSpec);
+            //              return se;
+            //          })
+            //    .ToList();
+
+            //      listSentEnquiries might contains enquiries which have been entered prior to 01/05/2017  and they should be removed
+            DateTime beginDt = new DateTime(2017, 5, 1);
+            listSentEnquiries = listSentEnquiries
+                .Where(se => FromDate <= se.DateSent && se.DateSent <= ToDate)
+                .Where(se => se.Date_Entered >= beginDt)
+                .Join(tpRepo.AllBHDminiFromFY17, se => se.BHD_ID, bhd => bhd.BHD_ID, (se, bhd) =>
+                {
+                    se.SetDeadline(bhd, CompSpec);
+                    return se;
+                })
+                .ToList();
+
+
+
+
+
+            //      Quoted enquiries
+            var listGroupedOffers = GroupedOffers.Select(b => b.FULL_REFERENCE.Trim());
+            List<SentEnquiry> AllQuotedEnquiriesFiltered = listSentEnquiries
+                .Where(se => listGroupedOffers.Contains(se.FullReference)) // only accept the sent enquiries from groupedOffers (non dupplicates)
+                .Select(se =>
+                {
+                    BHDmini b = tpRepo.AllBHDminiFromFY17.FirstOrDefault(_b => _b.BHD_ID == se.BHD_ID);
+                    se._tooltipColChart = new TooltipQuotedEnquiry(se, b);
+                    return se;
+                })
+                .ToList();
+            //     16/06/2017: remove potential dupplicates which slipped through the first net
+            //          potential dupplicate:
+            //              quoting took 1 day or less and there is an invalid or missing series reference 
+            List<string> WrongSeriesReferenceBookings = AllBHDmissingDataFY17
+                .Where(bmd => bmd.IncorrectSeriesReference || bmd.MissingSeriesReference)
+                .Select(bmd => bmd.bhdMini.FULL_REFERENCE.Trim())
+                .ToList();
+
+            AllQuotedEnquiriesFiltered = AllQuotedEnquiriesFiltered
+                .Where(se => !(se.nbDaysQuoting <= 1 && WrongSeriesReferenceBookings.Contains(se.FullReference.Trim())))
+                .ToList();
+
+            dictAllPerformance.Add("Turnaround", EvalAllDepartments(AllQuotedEnquiriesFiltered));
+
+            //      Contract enquiries
+            List<SentEnquiry> AllContractEnquiries = listSentEnquiries
+                   .Select(se =>
+                   {
+                       BHDmini b = tpRepo.AllBHDminiFromFY17.FirstOrDefault(_b => _b.BHD_ID == se.BHD_ID);
+                       return se.SwitchToContractEvaluation(b);
+                   })
+                   .ToList();
+            dictAllPerformance.Add("ContractEnquiries", EvalAllDepartments(AllContractEnquiries));
+
+
+        }
+
+
+
 
         private IEnumerable<string> ExtractBookingRefFY16(List<string> validStatus)
         {
@@ -285,6 +489,25 @@ namespace Reporting_application.Services.Performance
                 .ToList();
             return AllBHDmissingDataFY17;
         }
+
+
+        public async Task<IEnumerable<BHDmissingData>> ExtractMissingDataFromFY17Async(Func<string, string> MinimiseRef, IEnumerable<string> AllReferencesFY16, IEnumerable<BHDmini> AllBHDminiFY17, IEnumerable<string> AllReferencesFromFY17)
+        {
+            IEnumerable<string> validSeriesReferences = AllReferencesFY16.Concat(AllReferencesFromFY17);
+            IEnumerable<BHDmissingData> AllBHDmissingDataFY17 = AllBHDminiFY17
+                .Select(b =>
+                {
+                    var bmd = new BHDmissingData();
+                    bmd.bhdMini = b;
+                    bmd.SetMissingData(CompSpec, validSeriesReferences, MinimiseRef);
+                    bmd._tooltipColChart = new TooltipMissingData(b, bmd);
+                    return bmd;
+                })
+                .ToList();
+            return AllBHDmissingDataFY17;
+        }
+
+
 
         public void RetrieveDptCslRelated()
         {
@@ -373,7 +596,7 @@ namespace Reporting_application.Services.Performance
 
 
 
-
+            //if (tpRepo.DictCsls == null) tpRepo.GetAllConsultants();
             tr.Last_Consultant = tpRepo.DictCsls[b.CONSULTANT.Trim()];
             tr.BD_Consultant = tpRepo.DictCsls[b.SALE1.Trim()];
 
@@ -433,20 +656,23 @@ namespace Reporting_application.Services.Performance
 
 
             //      11/05/2017: remove the bookings which were entered prior to the 01/05/2017
-            IEnumerable<IGrouping<int?, BStage>> groupedBStages = compDbRepo.GroupedBStagesEnquiriesEnteredAfter01052017();
+            IEnumerable<IGrouping<int?, BStage>> groupedBStages = compDbRepo.GroupedBStagesEnquiries();
             //.GroupBy(bs => bs.FullReference);
 
 
 
 
             //      extract from the db the consultant name
-            //if (tpRepo.DictCsls == null) tpRepo.GetAllConsultants();
+            if (tpRepo.DictCsls == null) tpRepo.GetAllConsultants();
             Dictionary<string, string> consultNames = tpRepo.DictCsls;
 
+            IList<SentEnquiry> listSentEnquiries = AddSentEnquiries(groupedBStages, consultNames);
 
+            return listSentEnquiries;
+        }
 
-
-
+        private IList<SentEnquiry> AddSentEnquiries(IEnumerable<IGrouping<int?, BStage>> groupedBStages, Dictionary<string, string> consultNames)
+        {
             IList<SentEnquiry> listSentEnquiries = new List<SentEnquiry>();
             foreach (var gp in groupedBStages)
             {
@@ -454,13 +680,15 @@ namespace Reporting_application.Services.Performance
                 // count nbDaysContracting
                 // check the date sent and add an objet sentEnquiry
 
-                SentEnquiry se = new SentEnquiry();
-                bool hasQuoted = false;
-                bool hasContracted = false;
-
+                int bhdId = gp.FirstOrDefault().BHD_ID.Value;
                 DateTime dateEntered = gp.OrderBy(bs => bs.FromDate)
                     .First()
                     .FromDate;
+                SentEnquiry se = new SentEnquiry() { BHD_ID = bhdId, Date_Entered = dateEntered };
+                bool hasQuoted = false;
+                bool hasContracted = false;
+
+
 
                 foreach (BStage bs in gp.OrderBy(bs => bs.FromDate))
                 {
@@ -518,7 +746,7 @@ namespace Reporting_application.Services.Performance
                             listSentEnquiries.Add(se);
 
                             // reset
-                            se = new SentEnquiry();
+                            se = new SentEnquiry() { BHD_ID = bhdId, Date_Entered = dateEntered };
                             hasQuoted = false;
                             hasContracted = false;
                         }
@@ -527,6 +755,44 @@ namespace Reporting_application.Services.Performance
                 }
 
             }
+
+            return listSentEnquiries;
+        }
+
+        private async Task<IList<SentEnquiry>> generateSentEnquiriesListAsync()
+        {
+            //      create "listSentEnquiries" showing a list of objects of type SentEnquiry, having the following properties:
+            //              - FullReference
+            //              - Consultant (full name)
+            //              - Department (full name)
+            //              - DateSent
+            //              - nbDaysQuoting
+            //              - nbDaysContracting
+            //      cycle for a booking could be : QU/QR -> P/PE -> QU/QR -> Q/QF/SO -> QU/QR -> P/PE -> QU/QR -> Q/QF/SO
+            //          so the evaluation will be in chronological order
+
+
+            //      what happens when the booking has just been created as confirmed but does not exist yet as a BStage?
+            //          the evaluation needs to start from the list of BStage
+
+
+
+            //      11/05/2017: inclusion of the "OneDayer" : bookings which were entered on the same day as they were sent / confirmed or cancelled
+
+
+            //      11/05/2017: remove the bookings which were entered prior to the 01/05/2017
+            IEnumerable<IGrouping<int?, BStage>> groupedBStages = compDbRepo.GroupedBStagesEnquiries();
+            //.GroupBy(bs => bs.FullReference);
+
+
+
+
+            //      extract from the db the consultant name
+            //if (tpRepo.DictCsls == null) tpRepo.GetAllConsultants();
+            //if (tpRepo.DictCsls == null) await tpRepo.GetAllConsultantsAsync();
+            Dictionary<string, string> consultNames = tpRepo.DictCsls;
+
+            IList<SentEnquiry> listSentEnquiries = AddSentEnquiries(groupedBStages, consultNames);
 
             return listSentEnquiries;
         }
@@ -556,6 +822,33 @@ namespace Reporting_application.Services.Performance
             .ToList();
         }
 
+        public async Task ExtractTBAsItemsAsync()
+        {
+            var CslTBAassignmentTask = compDbRepo.GetConsultantsTBAsLocationsAsync();
+            var itemsVMTask = tpRepo.ExtractTBAsListAsync();
+
+
+            // assign the contract consultant to the TBA location
+            CslTBAassignment = await CslTBAassignmentTask;
+            var dictCC = CslTBAassignment
+                .Where(csl => csl.LocationsAssigned.Any())
+                .ToDictionary(cc => cc.INITIALS, cc => cc.LocationsAssigned.Select(l => l.CODE));
+            //var itemsVMTask = tpRepo.ExtractTBAsListAsync();
+            itemsVM = await itemsVMTask;
+            itemsVM = itemsVM.Select(tba =>
+            {
+                // find the first contract consultant who has tba.LocCode
+                var _ccCode = dictCC.FirstOrDefault(kvp => kvp.Value.Contains(tba.LocCode)).Key;
+                var _cc = CslTBAassignment.FirstOrDefault(_csl => _csl.INITIALS == _ccCode);
+                tba._contractConsultant = new ContractConsultant
+                {
+                    INITIALS = _ccCode != null ? _cc.INITIALS : "",
+                    NAME = _ccCode != null ? _cc.NAME : "Unassigned"
+                };
+                return tba;
+            })
+            .ToList();
+        }
 
 
 

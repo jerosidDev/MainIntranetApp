@@ -1,4 +1,4 @@
-using Reporting_application.Repository.ThirdpartyDB;
+﻿using Reporting_application.Repository.ThirdpartyDB;
 using Reporting_application.Utilities.CompanyDefinition;
 using Reporting_application.Utilities.GoogleCharts;
 using System;

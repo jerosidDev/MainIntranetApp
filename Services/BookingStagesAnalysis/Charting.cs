@@ -1,4 +1,4 @@
-using Reporting_application.Repository.ThirdpartyDB;
+﻿using Reporting_application.Repository.ThirdpartyDB;
 using Reporting_application.Utilities.CompanyDefinition;
 using System;
 using System.Collections;
@@ -10,7 +10,6 @@ namespace Reporting_application.ReportingModels
 {
 
 
-    // see the text file "ERA , chart types" for the full structure
     public enum valueDisplayed { turnover, bookingsAmount };
 
     public enum analysisType { departmentName, clientName, location, clientCategory, BDconsultant, pendingPlaces, consultant, YearOnYear, YearOnYearCumulative };

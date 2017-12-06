@@ -1,4 +1,4 @@
-using Reporting_application.Models;
+﻿using Reporting_application.Models;
 using Reporting_application.Repository;
 using Reporting_application.Repository.ThirdpartyDB;
 using Reporting_application.Services.Performance;
@@ -6,18 +6,19 @@ using Reporting_application.Utilities.CompanyDefinition;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 
 namespace Reporting_application.ReportingModels
 {
-    public class BookingsStagesAnalysis
+    public class BookingsStagesAnalysis : IBookingsStagesAnalysis
     {
 
-        public ThirdpartyDBContext db;
+        //public ThirdpartyDBContext db;
 
 
         // List of Charts of types ChartDisplayed associated with the current view
-        public IQueryable<ChartDisplayed> ListChartsCreated;
+        public IQueryable<ChartDisplayed> ListChartsCreated { get; set; }
 
 
         // all bookings since feb 2015
@@ -35,7 +36,7 @@ namespace Reporting_application.ReportingModels
 
 
         // full booking list associated with the timeframe , department and booking type selected in order to get exported
-        public IEnumerable<BkgAnalysisInfo> BkgsSelectedInView2 { get; private set; }
+        public IEnumerable<BkgAnalysisInfo> BkgsSelectedInView2 { get; set; }
 
 
         private DateTime BeginningFY15 { get; set; } = DateTime.Parse("01/02/2015", new System.Globalization.CultureInfo("fr-FR", true));
@@ -47,18 +48,21 @@ namespace Reporting_application.ReportingModels
         public CompanySpecifics compSpec { get; set; } = new CompanySpecifics();
 
 
-        public ICompanyDBRepository compDbRepo { get; set; }
-        public IThirdpartyDBrepository tpRepo { get; set; }
+        private ICompanyDBRepository compDbRepo { get; set; }
+        private IThirdpartyDBrepository tpRepo { get; set; }
+
+        private IPerformance perfRepo { get; set; }
 
 
-        public IPerformance perfRepo { get; set; }
-
-
-        public BookingsStagesAnalysis(ThirdpartyDBContext dbFromController)
+        public BookingsStagesAnalysis(ICompanyDBRepository _compDbRepo, IThirdpartyDBrepository _tpRepo, IPerformance _perfRepo)
         {
 
 
-            db = dbFromController;
+            compDbRepo = _compDbRepo;
+            tpRepo = _tpRepo;
+            perfRepo = _perfRepo;
+
+
 
             // used by the select in the view
             compSpec.DptsList["All"] = compSpec.DptsList.SelectMany(kvp => kvp.Value).ToList();
@@ -93,7 +97,6 @@ namespace Reporting_application.ReportingModels
 
 
             // the bookings are only selected after  the "01/02/2015"
-            //if (AllBookingsFromFY2015 == null) tpRepo.TransformAllBookingsFrom2015V2();
             var deadlineTable = perfRepo.GenerateDeadlineTable();
             var keyStagesDates = compDbRepo.RetrieveKeyStagesDates();
             AllBookingsForAnalysis = AllBookingsForAnalysis ?? tpRepo.TransformAllBookings(BeginningFY15, deadlineTable, keyStagesDates);
@@ -255,11 +258,12 @@ namespace Reporting_application.ReportingModels
 
         }
 
-        // the method will return 2 values:
-        //   the first one is the list of bookings 
-        //   the second one is the list of booking stages and their  status
-        public Tuple<IEnumerable<object>, Dictionary<string, List<string>>> AllTravellingsFrom2015()
+        public async Task<Tuple<IEnumerable<object>, Dictionary<string, List<string>>>> AllTravellingsFrom2015Async()
         {
+            // the method will return 2 values:
+            //   the first one is the list of bookings 
+            //   the second one is the list of booking stages and their  status
+
             // used for Groups Travelling Overview 
 
             // booking stages:
@@ -268,28 +272,40 @@ namespace Reporting_application.ReportingModels
             //      Cancelled
 
 
-
-
             // returns a list of anonymous objects containing travelling information used for filtering on the view
 
-            //      filter by date and by bookings sent , pending, confirmed , cancelled
-            IEnumerable<BHD> BkgsSelected2 = db.BHDs
-              .Where(b => b.DATE_ENTERED >= BeginningFY15)
-              .ToList()
-              .Where(b => compSpec.BookingStageCodes[bookingStage.received].Contains(b.STATUS.Trim()));
 
 
-            var keyStagesDates = compDbRepo.RetrieveKeyStagesDates();
+            // launch all the tasks at once
+            var GetDRMsTask = tpRepo.GetDRMsAsync();
+            var GetSA3Task = tpRepo.GetSA3Async();
+            var GetCSLTask = tpRepo.GetCSLAsync();
+            var GetPaxNumbersTask = tpRepo.GetPaxNumbersAsync();
+            var keyStagesDatesTask = compDbRepo.RetrieveKeyStagesDatesAsync();
+            var BkgsSelected2Task = tpRepo.GetBHDsFromDateEnteredAsync(BeginningFY15);
+
+
+
+
+
+
 
 
             // Extraction of dictionaries
-            Dictionary<string, string> _DRM = db.DRMs.ToDictionary(d => d.CODE, d => d.NAME);
+            Dictionary<string, string> _DRM = (await GetDRMsTask).ToDictionary(d => d.CODE, d => d.NAME);
+
+
             //      location name
-            Dictionary<string, string> _SA3 = db.SA3.ToDictionary(c => c.CODE, c => c.DESCRIPTION);
-            Dictionary<string, string> _CSL = db.CSLs.ToDictionary(c => c.INITIALS, c => c.NAME);
+            Dictionary<string, string> _SA3 = (await GetSA3Task).ToDictionary(c => c.CODE, c => c.DESCRIPTION);
+
+
+            Dictionary<string, string> _CSL = (await GetCSLTask).ToDictionary(c => c.INITIALS, c => c.NAME);
+
+
             //     pax number
-            Dictionary<int, int> _BSD = db.BSDs.Where(bsd => bsd.BSL_ID == 0)
-                .ToDictionary(bsd => bsd.BHD_ID, bsd => bsd.PAX);
+            //Dictionary<int, int> _BSD = db.BSDs.Where(bsd => bsd.BSL_ID == 0)
+            //    .ToDictionary(bsd => bsd.BHD_ID, bsd => bsd.PAX);
+            Dictionary<int, int> _BSD = await GetPaxNumbersTask;
 
 
             // creation of a dictionary for the booking types
@@ -321,6 +337,7 @@ namespace Reporting_application.ReportingModels
 
 
 
+            var keyStagesDates = await keyStagesDatesTask;
             Func<BHD, object> ProjectToTravelInfo = b =>
              {
 
@@ -398,7 +415,8 @@ namespace Reporting_application.ReportingModels
              };
 
 
-
+            IEnumerable<BHD> BkgsSelected2 = (await BkgsSelected2Task)
+                .Where(b => compSpec.BookingStageCodes[bookingStage.received].Contains(b.STATUS.Trim()));
             IEnumerable<object> TravelBkgs = BkgsSelected2.Select(b => ProjectToTravelInfo(b)).ToList();
 
             return new Tuple<IEnumerable<object>, Dictionary<string, List<string>>>(TravelBkgs, Stages);
