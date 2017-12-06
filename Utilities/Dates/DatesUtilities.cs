@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 
 namespace Reporting_application.Utilities.Dates
@@ -14,19 +14,18 @@ namespace Reporting_application.Utilities.Dates
             var AlldatesCalendar = Enumerable.Range(0, lastDateCalendar.Subtract(firstDateCalendar).Days + 1)
                 .Select(r => firstDateCalendar.AddDays(r));
 
-            //Func<DateTime, DateTime, int> nbWorkingDays = (fromDt, toDt) =>
-            //{
-            //    int nWD = AlldatesCalendar.Where(dt => dt >= fromDt && dt <= toDt)
-            //    .Where(dt => !(dt.DayOfWeek == DayOfWeek.Saturday || dt.DayOfWeek == DayOfWeek.Sunday))
-            //    .Count();
-            //    return nWD;
-            //};
-
-
             return AlldatesCalendar.Where(dt => dt >= FromDate && dt <= ToDate)
                 .Where(dt => !(dt.DayOfWeek == DayOfWeek.Saturday || dt.DayOfWeek == DayOfWeek.Sunday))
                 .Count();
 
+
+        }
+
+        public static int GetCurrentFinancialYear()
+        {
+            var ItIsJanuary = DateTime.Today.Month == 1;
+
+            return ItIsJanuary ? DateTime.Today.Year - 1 : DateTime.Today.Year;
 
         }
 

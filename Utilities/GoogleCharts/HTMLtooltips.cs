@@ -1,4 +1,4 @@
-using Reporting_application.Repository.ThirdpartyDB;
+﻿using Reporting_application.Repository.ThirdpartyDB;
 using Reporting_application.Services.Performance;
 using Reporting_application.Utilities.Performance;
 
@@ -57,8 +57,8 @@ namespace Reporting_application.Utilities.GoogleCharts
             Bkg_Name = b.NAME;
             Date_Entered = b.DATE_ENTERED.ToString("dd/MM/yyyy");
             Date_Sent = se.DateSent.ToString("dd/MM/yyyy");
-            Deadline = se.maxNbDaysQuoting.ToString();
-            if (se.maxNbDaysQuoting == 9999 || se.maxNbDaysQuoting == -1) Deadline = b.UDTEXT4.Trim();
+            Deadline = se.maxNbDayContracting.ToString();
+            if (se.maxNbDayContracting == 9999 || se.maxNbDayContracting == -1) Deadline = b.UDTEXT4.Trim();
 
 
 

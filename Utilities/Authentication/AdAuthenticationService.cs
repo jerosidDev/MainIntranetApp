@@ -1,4 +1,4 @@
-using Microsoft.Owin.Security;
+﻿using Microsoft.Owin.Security;
 using Reporting_application.App_Start;
 using System;
 using System.DirectoryServices.AccountManagement;
