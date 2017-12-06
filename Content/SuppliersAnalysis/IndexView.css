@@ -1,0 +1,86 @@
+﻿.container.body-content {
+  float: right;
+  width: 75%;
+}
+.body-content,
+.panel-primary.affix {
+  margin-top: 20px;
+}
+.container.main-frame {
+  width: 100%;
+}
+.well.well-lg {
+  color: white;
+  background-color: #460348;
+  font-weight: bold;
+}
+.panel-primary.affix {
+  float: left;
+  margin-left: 5px;
+}
+.panel-primary.affix .panel-body {
+  overflow-y: scroll;
+  height: 500px;
+  font-size: 18px;
+}
+.panel-primary.affix .panel-body ul {
+  list-style-type: none;
+}
+.panel-primary.affix .panel-body .form-control {
+  font-size: 18px;
+}
+.panel-primary.affix .panel-body .well {
+  margin: 20px;
+}
+.panel-heading h3,
+.panel-heading p {
+  text-align: center;
+}
+.All {
+  background-color: darkblue;
+}
+.Confirmed {
+  background-color: green;
+  margin-left: 50px;
+}
+.Unconfirmed {
+  background-color: darkorange;
+  margin-left: 50px;
+}
+.Cancelled {
+  background-color: red;
+  margin-left: 50px;
+}
+.All,
+.Confirmed,
+.Cancelled,
+.Unconfirmed {
+  color: white;
+  padding: 10px;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+}
+.All ul,
+.Confirmed ul,
+.Cancelled ul,
+.Unconfirmed ul {
+  display: none;
+}
+.google-visualization-tooltip {
+  font-size: 18px;
+}
+/* styling for the google table chart*/
+.centering_text {
+  text-align: center;
+  font-size: large;
+  padding: 20px !important;
+}
+.table-background {
+  background: linear-gradient(blue, white);
+}
+/*arrows inside thead table chart*/
+.google-visualization-formatters-arrow-dr,
+.google-visualization-formatters-arrow-ug {
+  background-size: 20%;
+}
