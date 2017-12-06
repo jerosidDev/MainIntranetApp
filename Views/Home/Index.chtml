@@ -5,7 +5,9 @@
 @model Dictionary<string, Dictionary<string, string>>
 
 
-@using ERAwebAPI.ModelsDB
+@using CompanyDbWebAPI.ModelsDB;
+
+
 
 <div class="container">
 
@@ -24,7 +26,7 @@
         <div class="row">
             <div class="panel panel-primary">
                 <div class="panel panel-heading text-center" style="background-color:#bd9c29;font-size:20px;font-weight:bolder;">
-                    ERA Database update Log ( minus figures indicate testing applied)
+                    Solution Database update Log ( minus figures indicate testing applied)
                 </div>
                 <div class="panel panel-body">
 
@@ -108,30 +110,30 @@
                     }
                     <div class="panel panel-danger">
                         <div class="panel-heading">Bedbank</div>
-                        <div class="panel-body"><a href="https://...">View calendar</a></div>
+                        <div class="panel-body"><a href="link1">View calendar</a></div>
                     </div>
                     <div class="panel panel-danger">
                         <div class="panel-heading">Busy dates calendar</div>
                         <div class="panel-body">
                             <ul>
                                 <li>
-                                    <a href="https://...">London Busy Dates </a>
+                                    <a href="link2">London Busy Dates </a>
                                 </li>
                                 <li>
-                                    <a href="https://...">England/Wales Busy Dates </a>
+                                    <a href="link3">England/Wales Busy Dates </a>
                                 </li>
                                 <li>
-                                    <a href="https://...">Scotland Busy Dates </a>
+                                    <a href="link4">Scotland Busy Dates </a>
                                 </li>
                                 <li>
-                                    <a href="https://...">Ireland Busy Dates </a>
+                                    <a href="link5">Ireland Busy Dates </a>
                                 </li>
                             </ul>
                         </div>
                     </div>
                     <div class="panel panel-danger">
                         <div class="panel-heading">Contracts Meetings & Events </div>
-                        <div class="panel-body"><a href="https://...">View calendar</a></div>
+                        <div class="panel-body"><a href="link6">View calendar</a></div>
                     </div>
                 </div>
             </div>
@@ -164,12 +166,12 @@
                         &#9992; Enquiries analysis
                     </div>
                     <div class="panel-body">
-                        <p>Overview of all the enquiries for the current financial year</p>
+                        <p>An overview of all the enquiries for the current financial year</p>
                         <ul>
                             <li>Visual analysis per travel date , date entered , date confirmed</li>
                             <li>Comparison with the previous financial  year</li>
                             <li>Sales updates</li>
-                            <li>Individual client variation</li>
+                            <li>Individual clients variation</li>
                         </ul>
                         <div style="display:none" id="ProgressBarGroup2">
                             <div class="container" style="width:250px">
@@ -183,6 +185,38 @@
                     </div>
                 </div>
             </a>
+
+
+            <a onclick='moveProgressBar2("ProgressBarGroup4")' href="/SuppliersAnalysis">
+                <div class="panel panel-primary">
+                    <div class="panel-heading" style="background-color:#460348">
+                        &#9971; Suppliers analysis
+                    </div>
+                    <div class="panel-body">
+                        <p>An overview of our suppliers for the current, previous and next financial years</p>
+                        <ul>
+                            <li>Visual analysis of GBP costs, service lines and room_nights</li>
+                            <li>Filtering by service types, departments, locations,etc.</li>
+                            <li>Cumulative figures at any point during the financial year</li>
+                            <li>Year on year comparison</li>
+                            <li>Individual suppliers and chains variations</li>
+                        </ul>
+                        <div style="display:none" id="ProgressBarGroup4">
+                            <div class="container" style="width:250px">
+                                <p class="text-primary">Loading from the Database</p>
+                                <div class="progress">
+                                    <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;background-color:#460348;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+
+
+
+
 
         </div>
         <div class="col-md-4">
@@ -253,7 +287,7 @@
 
                 <div class="panel panel-body">
 
-                    <a href="https://..."> HR login </a>
+                    <a href="hrLink"> HR login </a>
 
                 </div>
 
