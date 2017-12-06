@@ -7,8 +7,10 @@ namespace Reporting_application.App_Start
     using Models;
     using Ninject;
     using Ninject.Web.Common;
+    using ReportingModels;
     using Repository;
     using Services.Performance;
+    using Services.SuppliersAnalysis;
     using System;
     using System.Web;
 
@@ -67,6 +69,9 @@ namespace Reporting_application.App_Start
             kernel.Bind<ICompanyDBRepository>().To<CompanyDBRepository>();
             kernel.Bind<IPerformance>().To<Performance>();
             kernel.Bind<IThirdpartyDBContext>().To<ThirdpartyDBContext>();
+            kernel.Bind<IBookingsStagesAnalysis>().To<BookingsStagesAnalysis>();
+            kernel.Bind<ISuppliersAnalysis>().To<SuppliersAnalysis>();
+
 
         }
     }
