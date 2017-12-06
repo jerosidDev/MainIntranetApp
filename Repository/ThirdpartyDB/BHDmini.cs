@@ -1,4 +1,4 @@
-using Reporting_application.Models;
+﻿using Reporting_application.Models;
 using Reporting_application.Services.Performance;
 using Reporting_application.Utilities.CompanyDefinition;
 using Reporting_application.Utilities.GoogleCharts;
@@ -35,6 +35,7 @@ namespace Reporting_application.Repository.ThirdpartyDB
         public string SALE4 { get; set; }
         public string SALE5 { get; set; }
         public string SALE6 { get; set; }
+        public int BHD_ID { get; set; }
 
         [XmlIgnore]
         public TooltipConversion _tooltipColChart { get; set; }
@@ -74,6 +75,7 @@ namespace Reporting_application.Repository.ThirdpartyDB
             SALE4 = _bhd.SALE4;
             SALE5 = _bhd.SALE5;
             SALE6 = _bhd.SALE6;
+            BHD_ID = _bhd.BHD_ID;
 
             SetPerformanceItems();
         }
@@ -86,7 +88,7 @@ namespace Reporting_application.Repository.ThirdpartyDB
         private void SetPerformanceItems()
         {
             IsDepartment = (cs, dpt) => cs.RetrieveDepartment(FULL_REFERENCE) == dpt;
-            IsSuccess = cs => !cs.IsUnconfirmed(this);
+            IsSuccess = cs => !cs.IsBHDunconfirmed(this);
             IsCsl = csl => SALE1.Trim() == csl;
             GetAllCslFromListOfItems = _listItems => _listItems.Select(t => t.SALE1.Trim()).Distinct().ToList();
         }

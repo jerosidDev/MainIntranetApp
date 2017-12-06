@@ -1,4 +1,4 @@
-using Reporting_application.Repository.ThirdpartyDB;
+﻿using Reporting_application.Repository.ThirdpartyDB;
 using Reporting_application.Services.Performance;
 using Reporting_application.Utilities.CompanyDefinition;
 using Reporting_application.Utilities.GoogleCharts;
@@ -40,6 +40,10 @@ namespace Reporting_application.Utilities.Performance
         public Func<string, bool> IsCsl { get; set; }
         [ScriptIgnore]
         public Func<List<SentEnquiry>, List<string>> GetAllCslFromListOfItems { get; set; }
+        [ScriptIgnore]
+        public int BHD_ID { get; set; }
+        [ScriptIgnore]
+        public DateTime Date_Entered { get; set; }
 
 
         public SentEnquiry()

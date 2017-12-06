@@ -1,10 +1,13 @@
-using Reporting_application.Models;
-using Reporting_application.Repository.ERADB;
+﻿using Reporting_application.Models;
+using Reporting_application.Repository.SolutionDB;
 using Reporting_application.Repository.ThirdpartyDB;
+using Reporting_application.Services.Performance;
+using Reporting_application.Services.SuppliersAnalysis;
 using Reporting_application.Utilities.CompanyDefinition;
 using Reporting_application.Utilities.GoogleCharts;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Reporting_application.Repository
 {
@@ -12,12 +15,13 @@ namespace Reporting_application.Repository
     {
         IDictionary<string, string> GetRecentlyActiveConsultants();
         void GetAllConsultants();
+        Task GetAllConsultantsAsync();
         Dictionary<string, string> DictCsls { get; }
         Dictionary<string, string> DictSA1 { get; }
 
 
-        List<BHDmini> AllBookingsFromFY17 { get; }
-        void ExtractAllBookingsFromFY17();
+        List<BHDmini> AllBHDminiFromFY17 { get; }
+
 
         List<BHDmini> ExtractAllBookingsEnteredFY16();
 
@@ -28,10 +32,29 @@ namespace Reporting_application.Repository
         IEnumerable<BkgAnalysisInfo> TransformAllBookings(DateTime BeginningFY15, List<PendingEnquiryTableRow> deadlineTable, Dictionary<int, StagesDates> keyStagesDates);
 
 
-        IEnumerable<ContractTBAsViewModel> ExtractTBAsViewModel();
+        IEnumerable<ContractTBAsInfo> ExtractTBAsList();
+        Task<IEnumerable<ContractTBAsInfo>> ExtractTBAsListAsync();
 
 
         IThirdpartyDBContext tpContext3 { get; set; }
+
+
+
+        Task ExtractAllBHDminiFromFY17Async();
+
+
+        Task<IEnumerable<BHD>> GetBHDsFromDateEnteredAsync(DateTime from);
+        Task<IEnumerable<DRM>> GetDRMsAsync();
+        Task<IEnumerable<SA3>> GetSA3Async();
+        Task<IEnumerable<CSL>> GetCSLAsync();
+        Task<Dictionary<int, int>> GetPaxNumbersAsync();
+
+
+
+
+        Task<List<SuppliersAnalysisData>> InitialLoadingSuppliersAnalysisAsync(int currentFY, List<string> validStatuses);
+
+
 
 
     }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace Reporting_application.Repository.ThirdpartyDB
 {
@@ -13,6 +13,7 @@ namespace Reporting_application.Repository.ThirdpartyDB
         public string Full_Reference { get; internal set; }
 
         public string AgentName { get; internal set; }
+        public string AgentChain { get; set; }
 
         public string EstimatedTurnover { get; internal set; }
         public DateTime DateEntered { get; internal set; }
@@ -29,6 +30,6 @@ namespace Reporting_application.Repository.ThirdpartyDB
 
         public bool PastDeadline { get; internal set; }
 
-        public string DateConfirmedOnTP { get; internal set; }
+        public DateTime TravelDate { get; internal set; }
     }
 }

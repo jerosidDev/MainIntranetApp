@@ -1,5 +1,4 @@
-using Reporting_application.Repository;
-using Reporting_application.Repository.ThirdpartyDB;
+﻿using Reporting_application.Repository.ThirdpartyDB;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +7,10 @@ using System.Linq;
 namespace Reporting_application.Utilities.CompanyDefinition
 {
 
-    public enum bookingStage { received, sent, confirmed, cancelled, pending, pendingPastDeadline, pendingSalesBDOPS, pendingContract, pendingSalesBDOPSRequote, pendingSalesBDOPSFirstQuote };
+    public enum bookingStage { received, sent, confirmed, cancelled, pending, pendingPastDeadline, pendingSalesBDOPS, pendingContract, pendingSalesBDOPSRequote, pendingSalesBDOPSFirstQuote, Bedbank };
+
+
+    public enum ServiceLineType { Unconfirmed };
 
 
     public class CompanySpecifics
@@ -34,6 +36,12 @@ namespace Reporting_application.Utilities.CompanyDefinition
         public Func<string, bool> IsSent { get; private set; }
         public Func<string, bool> IsConfirmed { get; private set; }
         public Func<string, bool> IsCancelled { get; private set; }
+        public Func<string, bool> IsUnconfirmed { get; private set; }
+
+
+
+        // definition of the different codes used for the service lines
+        public Dictionary<ServiceLineType, List<string>> ServiceLinesCodes { get; set; }
 
 
         public CompanySpecifics()
@@ -80,7 +88,8 @@ namespace Reporting_application.Utilities.CompanyDefinition
                 .ToList();
 
 
-
+            // bed bank
+            BookingStageCodes[bookingStage.Bedbank] = new List<string>() { "B" };
 
             //      break down of the pending types
             BookingStageCodes[bookingStage.pendingPastDeadline] = BookingStageCodes[bookingStage.pending];
@@ -112,6 +121,12 @@ namespace Reporting_application.Utilities.CompanyDefinition
             IsSent = s => BookingStageCodes[bookingStage.sent].Contains(s.Trim());
             IsConfirmed = s => BookingStageCodes[bookingStage.confirmed].Contains(s.Trim());
             IsCancelled = s => BookingStageCodes[bookingStage.cancelled].Contains(s.Trim());
+            IsUnconfirmed = s => !BookingStageCodes[bookingStage.confirmed].Concat(BookingStageCodes[bookingStage.cancelled]).Contains(s.Trim());
+
+
+            // service lines definition
+            ServiceLinesCodes = new Dictionary<ServiceLineType, List<string>>();
+            ServiceLinesCodes[ServiceLineType.Unconfirmed] = new List<string>() { "CX", "XP", "TB" };
 
         }
 
@@ -133,7 +148,7 @@ namespace Reporting_application.Utilities.CompanyDefinition
 
         }
 
-        public bool IsUnconfirmed(BHDmini b)
+        public bool IsBHDunconfirmed(BHDmini b)
         {
             return !BookingStageCodes[bookingStage.confirmed].Concat(BookingStageCodes[bookingStage.cancelled])
               .Contains(b.STATUS.Trim());
@@ -155,7 +170,47 @@ namespace Reporting_application.Utilities.CompanyDefinition
 
         }
 
+        public List<BookingStageItem> LoadBookingStageItems()
+        {
 
+
+            List<BookingStageItem> bsi = new List<BookingStageItem>();
+
+
+            bsi.Add(new BookingStageItem() { Name = "All", Statuses = BookingStageCodes[bookingStage.received] });
+
+
+            bsi.Add(new BookingStageItem() { Name = "Unconfirmed", Statuses = BookingStageCodes[bookingStage.sent].Concat(BookingStageCodes[bookingStage.pending]).ToList() });
+
+
+            bsi.Add(new BookingStageItem() { Name = "Confirmed", Statuses = BookingStageCodes[bookingStage.confirmed] });
+
+
+            bsi.Add(new BookingStageItem() { Name = "Cancelled", Statuses = BookingStageCodes[bookingStage.cancelled] });
+
+
+
+            return bsi;
+
+
+        }
+
+
+
+
+    }
+
+    public class BookingStageItem
+    {
+        public string Name { get; set; }
+
+        public List<string> Statuses { get; set; }
+
+
+        public bool IsStage(string bookingStatus)
+        {
+            return Statuses.Contains(bookingStatus.Trim());
+        }
 
 
     }
