@@ -1,14 +1,9 @@
-using Reporting_application.Models;
-using Reporting_application.ReportingModels;
-using Reporting_application.Repository;
-using Reporting_application.Repository.ThirdpartyDB;
-using Reporting_application.Services.Performance;
+﻿using Reporting_application.ReportingModels;
 using System;
 using System.IO;
 using System.Linq;
 using System.Web.Mvc;
 using System.Web.UI.DataVisualization.Charting;
-using Excel = Microsoft.Office.Interop.Excel;
 
 namespace Reporting_application.Controllers
 {
@@ -17,20 +12,14 @@ namespace Reporting_application.Controllers
     {
 
 
-        private ThirdpartyDBContext db = new ThirdpartyDBContext();
-
-        public static BookingsStagesAnalysis bAnalysis;
+        private static IBookingsStagesAnalysis bAnalysis;
 
 
-        public BkgsOverviewController(IPerformance _perfRepo, ICompanyDBRepository _compDbRepo, IThirdpartyDBrepository _tpRepo)
+        public BkgsOverviewController(IBookingsStagesAnalysis _bAnalysis)
         {
             if (bAnalysis == null)
-            {
-                bAnalysis = new BookingsStagesAnalysis(db);
-                bAnalysis.perfRepo = _perfRepo;
-                bAnalysis.compDbRepo = _compDbRepo;
-                bAnalysis.tpRepo = _tpRepo;
-            }
+                bAnalysis = _bAnalysis;
+
         }
 
 
@@ -105,47 +94,47 @@ namespace Reporting_application.Controllers
         }
 
 
-        public ActionResult ExportToExcel()
-        {
-            Excel.Application xlApp = new Excel.Application();
-            Excel.Workbook wb = xlApp.Workbooks.Add();
-            Excel.Worksheet ws = wb.Worksheets.Add();
+        //public ActionResult ExportToExcel()
+        //{
+        //    Excel.Application xlApp = new Excel.Application();
+        //    Excel.Workbook wb = xlApp.Workbooks.Add();
+        //    Excel.Worksheet ws = wb.Worksheets.Add();
 
-            // write the BkgMinInfo class's properties on the first row
-            System.Reflection.PropertyInfo[] propInfo = typeof(BkgAnalysisInfo).GetProperties();
-            int row = 1; int col = 1;
-            foreach (var p in propInfo)
-            {
-                ws.Cells[row, col] = p.Name;
-                col++;
-            }
+        //    // write the BkgMinInfo class's properties on the first row
+        //    System.Reflection.PropertyInfo[] propInfo = typeof(BkgAnalysisInfo).GetProperties();
+        //    int row = 1; int col = 1;
+        //    foreach (var p in propInfo)
+        //    {
+        //        ws.Cells[row, col] = p.Name;
+        //        col++;
+        //    }
 
-            // write the data
-            row++;
-            foreach (BkgAnalysisInfo b in bAnalysis.BkgsSelectedInView2)
-            {
-                col = 1;
-                foreach (var p in propInfo)
-                {
-                    if (p.Name == "DateConfirmed" && p.GetValue(b).ToString() != "")
-                    {
-                        // attention date confirmed is converted to date with the wrong culture if done directly to excel
-                        DateTime dc = DateTime.Parse(p.GetValue(b).ToString(), bAnalysis.culture);
-                        ws.Cells[row, col] = dc;
-                    }
-                    else
-                    {
-                        ws.Cells[row, col] = p.GetValue(b);
-                    }
-                    col++;
-                }
-                row++;
-            }
+        //    // write the data
+        //    row++;
+        //    foreach (BkgAnalysisInfo b in bAnalysis.BkgsSelectedInView2)
+        //    {
+        //        col = 1;
+        //        foreach (var p in propInfo)
+        //        {
+        //            if (p.Name == "DateConfirmed" && p.GetValue(b).ToString() != "")
+        //            {
+        //                // attention date confirmed is converted to date with the wrong culture if done directly to excel
+        //                DateTime dc = DateTime.Parse(p.GetValue(b).ToString(), bAnalysis.culture);
+        //                ws.Cells[row, col] = dc;
+        //            }
+        //            else
+        //            {
+        //                ws.Cells[row, col] = p.GetValue(b);
+        //            }
+        //            col++;
+        //        }
+        //        row++;
+        //    }
 
 
-            xlApp.Visible = true;
-            return null;
-        }
+        //    xlApp.Visible = true;
+        //    return null;
+        //}
 
         public ActionResult ExportToExcel2()
         {

@@ -1,10 +1,9 @@
-using Reporting_application.Models;
-using Reporting_application.ReportingModels;
-using Reporting_application.Repository;
+﻿using Reporting_application.ReportingModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 
 namespace Reporting_application.Controllers
@@ -24,32 +23,29 @@ namespace Reporting_application.Controllers
         static private Dictionary<string, List<object>> GroupedMissingInformation { get; set; }
 
 
-        private ICompanyDBRepository compDbRepo { get; set; }
+        static private IBookingsStagesAnalysis BStagesAnalysis;
 
-        public GroupsTravellingOverviewController(ICompanyDBRepository _compDbRepo)
+
+        public GroupsTravellingOverviewController(IBookingsStagesAnalysis _bStagesAnalysis)
         {
-            compDbRepo = _compDbRepo;
+            if (BStagesAnalysis == null)
+                BStagesAnalysis = _bStagesAnalysis;
         }
+
+
 
 
         [HttpGet]
         // GET: GroupsTravellingOverview
-        public ActionResult Index()
+        public async Task<ActionResult> Index()
         {
 
-            IEnumerable<object> TravelData = null;
-            Dictionary<string, List<string>> stages;
 
 
-            //  initial loading of pcModel
-            using (ThirdpartyDBContext te = new ThirdpartyDBContext())
-            {
-                BookingsStagesAnalysis pcModel = new BookingsStagesAnalysis(te, "GroupsTravelling");
-                pcModel.compDbRepo = compDbRepo;
-                Tuple<IEnumerable<object>, Dictionary<string, List<string>>> tup = pcModel.AllTravellingsFrom2015();
-                TravelData = tup.Item1;
-                stages = tup.Item2;
-            }
+
+            Tuple<IEnumerable<object>, Dictionary<string, List<string>>> tup = await BStagesAnalysis.AllTravellingsFrom2015Async();
+            IEnumerable<object> TravelData = tup.Item1;
+            Dictionary<string, List<string>> stages = tup.Item2;
 
 
             // fill ViewData for the options display , the value name is where  the filter will be applied and the text string is what will be visible on the page
@@ -136,10 +132,6 @@ namespace Reporting_application.Controllers
 
                     string _dm = dateMissing.GetValue(o).ToString();
                     string _sm = seriesMissing.GetValue(o).ToString();
-
-                    //// test
-                    //PropertyInfo refTest = objTest.GetType().GetProperty("Full_Reference");
-                    //string r = refTest.GetValue(o).ToString();
 
                     return _dm == "Yes" || _sm == "Yes";
                 }).ToList();
