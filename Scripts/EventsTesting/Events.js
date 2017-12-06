@@ -1,4 +1,4 @@
-/// <reference path="../jquery-3.1.1.min.js" />
+﻿/// <reference path="../jquery-3.1.1.min.js" />
 /// <reference path="../moment.min.js" />
 /// <reference path="../bootstrap.min.js" />
 /// <reference path="../bootstrap-datetimepicker.js" />

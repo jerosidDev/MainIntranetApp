@@ -1,4 +1,4 @@
-// travel data sorted by travel date
+﻿// travel data sorted by travel date
 var TravelData = { weekly: {}, monthly: {} };
 // travel data form the previous year which will be compared in the current year (year on year)
 var TravelDataYOY = { weekly: {}, monthly: {} };
@@ -29,26 +29,51 @@ var FinalisedChart;
 var MissingdataChart;
 
 
-// load the data from the server
+
+
+// load the data from the server asynchronously
+var MaxAjaxCalls = 0;
+var ActualAjaxCalls = 0;
+
+MaxAjaxCalls++;
 $.getJSON('/GroupsTravellingOverview/ReturnJSONMissingInformation', function (data4) {
     MissingData["weekly"] = data4;
-    $.getJSON('/GroupsTravellingOverview/ReturnJSONEnquiriesFinalised', function (data3) {
-        EnquiriesFinalised["weekly"] = data3;
-        $.getJSON('/GroupsTravellingOverview/ReturnJSONEnquiriesEntered',
-        function (data2) {
-            EnquiriesEntered["weekly"] = data2;
-            // load the data by travel dates  from the controller
-            $.getJSON('/GroupsTravellingOverview/ReturnJSONTravelData',
-                function (data) {
-                    TravelData["weekly"] = data;
-                    GenerateAllDataYOY();
-                    GenerateAllDataMonthly();
-                    LoadgooglePackage();
-                });
-        });
-    });
+    ActualAjaxCalls++;
+    if (MaxAjaxCalls === ActualAjaxCalls)
+        ExecuteAfterJSONloading();
 });
 
+MaxAjaxCalls++;
+$.getJSON('/GroupsTravellingOverview/ReturnJSONEnquiriesFinalised', function (data3) {
+    EnquiriesFinalised["weekly"] = data3;
+    ActualAjaxCalls++;
+    if (MaxAjaxCalls === ActualAjaxCalls)
+        ExecuteAfterJSONloading();
+});
+
+MaxAjaxCalls++;
+$.getJSON('/GroupsTravellingOverview/ReturnJSONEnquiriesEntered', function (data2) {
+    EnquiriesEntered["weekly"] = data2;
+    ActualAjaxCalls++;
+    if (MaxAjaxCalls === ActualAjaxCalls)
+        ExecuteAfterJSONloading();
+});
+
+MaxAjaxCalls++;
+$.getJSON('/GroupsTravellingOverview/ReturnJSONTravelData', function (data) {
+    TravelData["weekly"] = data;
+    ActualAjaxCalls++;
+    if (MaxAjaxCalls === ActualAjaxCalls)
+        ExecuteAfterJSONloading();
+});
+
+
+
+function ExecuteAfterJSONloading() {
+    GenerateAllDataYOY();
+    GenerateAllDataMonthly();
+    LoadgooglePackage();
+}
 
 
 // load the google chart package once the travel data are here
@@ -148,7 +173,7 @@ function drawTableChart() {
     //});
 
 
-    $(".dp").on("change" ,function () {
+    $(".dp").on("change", function () {
         drawTableChart();
         var scrollPos = $("#travelPeriodPanel").prop('offsetTop');
         $(window).scrollTop(scrollPos);

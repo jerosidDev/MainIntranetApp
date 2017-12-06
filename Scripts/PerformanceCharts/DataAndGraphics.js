@@ -1,11 +1,8 @@
-/// <reference path="Calculation.js" />
+﻿/// <reference path="Calculation.js" />
 
 
 // contain all data from which the charts data will be calculated
 var JsonPerformanceItems;
-
-// initial to full name dictionary
-var dictConsultant;
 
 
 // full list of departments, containing the consultants
@@ -52,9 +49,6 @@ function DrawCharts() {
     }));
 
 
-    //// will be filled in DrawGaugeChart()
-    //var dataSourceContractDpt = {};
-
 
     DrawGaugeChart();
 
@@ -92,23 +86,14 @@ function DrawCharts() {
                 var source = undefined;
                 if (Array.isArray(evaluated)) {
 
+                    source = { Success: [], Unsuccess: [] };
                     // create a common source out of all the consultants
                     for (var i = 0; i < AllContractCsl.length ; i++) {
                         var csl = AllContractCsl[i];
                         var sourceCsl = FindFirstSourceForConsultant(csl);
 
-                        //// will be used for the column chart:
-                        //dataSourceContractDpt[csl] = sourceCsl;
-
-
-                        // add success and unsuccess to the source
-                        if (source == undefined) {
-                            source = sourceCsl;
-                        }
-                        else {
-                            source["Success"] = source["Success"].concat(sourceCsl["Success"]);
-                            source["Unsuccess"] = source["Unsuccess"].concat(sourceCsl["Unsuccess"]);
-                        }
+                        source["Success"] = source["Success"].concat(sourceCsl["Success"]);
+                        source["Unsuccess"] = source["Unsuccess"].concat(sourceCsl["Unsuccess"]);
 
                     }
 
@@ -178,6 +163,7 @@ function DrawCharts() {
         var colChartsMapping = {
             ColChart1: {
                 div: "colChart1_div", title: "Enquiries sent",
+                selectId: "csl",
                 dataSourceDpt: JsonPerformanceItems["Turnaround"][departmentSelected],
                 colType: {
                     Success: { title: "Sent Within Deadline", color: "green" },
@@ -186,6 +172,7 @@ function DrawCharts() {
             },
             ColChart2: {
                 div: "colChart2_div", title: "Confirmed and unconfirmed enquiries",
+                selectId: "csl",
                 dataSourceDpt: JsonPerformanceItems["Conversion"][departmentSelected],
                 colType: {
                     Success: { title: "Confirmed", color: "green" },
@@ -194,6 +181,7 @@ function DrawCharts() {
             },
             ColChart3: {
                 div: "colChart3_div", title: "Enquiries with missing or invalid data",
+                selectId: "csl",
                 dataSourceDpt: JsonPerformanceItems["MissingData"][departmentSelected],
                 colType: {
                     Unsuccess: { title: "Details on missing or invalid data", color: "red" }
@@ -201,10 +189,11 @@ function DrawCharts() {
             },
             ColChart4: {
                 div: "colChart4_div", title: "Contract enquiries",
+                selectId: "contractCsl",
                 dataSourceDpt: JsonPerformanceItems["ContractEnquiries"][departmentSelected],
                 colType: {
-                    Success: { title: "Confirmed", color: "green" },
-                    Unsuccess: { title: "Unconfirmed", color: "red" }
+                    Success: { title: "Sent Within Deadline", color: "green" },
+                    Unsuccess: { title: "Sent Beyond Deadline", color: "red" }
                 }
             }
         };
@@ -236,14 +225,15 @@ function DrawCharts() {
 
                 for (var csl in dataDpt) {
 
-                    // in case of the consultant does not appear for this type of evaluation
-                    var consultantDisplayedinSelect = $('#csl option[value="' + csl + '"]').val() != undefined;
+                    var selectItem = $('#' + cmObject.selectId + ' option[value="' + csl + '"]');
 
-                    if (csl != "DepartmentOnly" && dataDpt[csl] != undefined && consultantDisplayedinSelect) {  
+                    //      the consultant should appear in the select option
+                    var consultantDisplayedinSelect = selectItem.val() != undefined;
+
+                    if (dataDpt[csl] != undefined && consultantDisplayedinSelect) {
 
                         var rowToAdd = [];
-                        //rowToAdd.push(dictConsultant[csl]);
-                        var cslName = AllDptCslRelated[departmentSelected][csl];
+                        var cslName = selectItem.text();
                         rowToAdd.push(cslName);
 
                         for (var ct in colType) {
@@ -258,7 +248,7 @@ function DrawCharts() {
 
                                 // see https://developers.google.com/chart/interactive/docs/roles#stylerole to add different styles
                                 var style = "color:" + colType[ct]["color"] + ";";
-                                if (csl != cslSelected) style += "opacity: 0.5;";
+                                if (csl != selectItem.parent().val()) style += "opacity: 0.5;";
                                 rowToAdd.push(style);
 
                             }
@@ -306,7 +296,7 @@ function DrawCharts() {
                 return returnedTable;
             }
 
-            var titleChart = cmObject["title"] != "Contract enquiries" ? departmentSelected + " department: " + cmObject["title"] : "";
+            var titleChart = cmObject["title"] != "Contract enquiries" ? "Consultants in " + departmentSelected + " department: " + cmObject["title"] : "";
             var optionColChart = {
                 title: titleChart, legend: 'none', height: '600',
                 vAxis: { logscale: true },

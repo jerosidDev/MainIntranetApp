@@ -1,4 +1,4 @@
-
+﻿
 
 google.charts.load('current', { 'packages': ['table'] });
 //google.charts.setOnLoadCallback(CallAjax);
