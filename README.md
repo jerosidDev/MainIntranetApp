@@ -1,7 +1,10 @@
+	
+# Introduction
 
-# Objective
-It is to demonstrate my skills on the technologies I use on a daily basis. The repositories will contain only some of the code contained in the different projects I work on. The whole solution has been entirely developed by myself.
-I would appreciate feedbacks from experienced developers regarding the code, the architecture or different design patterns.
+This repository represents a snapshot of my technical skills in December 2017. My coding practices and skills set has evolved since then. I was the only developer so was responsible for all operational and support tasks as well.
+
+Technologies used: C#, ASP.NET MVC and Web API, Entity Framework 6, LINQ, Razor, HTML5, CSS, Bootstrap, JavaScript, JQuery, AJAX, Google Charts API, IIS, SQL Server
+
 
 # Structure of the solution
   -	MainIntranetApp : main service accessible through AD authentication and a browser for end users (colleagues)
@@ -27,7 +30,7 @@ The solution was to use the browser to view data and charts. It became an intran
 
 
 # MainIntranetApp data sources
-The first data source is from the third party booking system’s database. I use Entity framework from an existing database which generate the .edmx model and the necessary entity classes. These and the db context will not be shown in this repository, only their uses in this project will be shown. 
+The first data source is from the third party booking system’s database. I use Entity Framework from an existing database which generate the .edmx model and the necessary entity classes. These and the db context will not be shown in this repository, only their uses in this project will be shown. 
 
 To avoid conflict with the previous Entity framework model, I used the second data source which is the solution's database through a Web API defined on a separate project: CompanyDbWebAPI.
 
