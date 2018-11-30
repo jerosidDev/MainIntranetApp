@@ -20,7 +20,7 @@ Technologies used: C#, ASP.NET MVC and Web API, Entity Framework 6, LINQ, Razor,
 
 # Origin
 The project was a response to a few reporting issues:
-  - the KPI reports were created with Excel, automated and connected to the third party booking system's database:
+  - the KPIs reports were created with Excel, automated and connected to the third party booking system's database:
       - It was getting harder to modify them on an individual basis, their complexity was increased to compensate for the limitation of Excel
       - Remotely working colleagues would only be able to access them from a terminal server connection, adding strain to it
       - In some cases I had to create desktop applications to communicate with the CRM's web api and generate the Excel file, they had to be installed on each machine with administrator credentials, same issue when updating the applications
