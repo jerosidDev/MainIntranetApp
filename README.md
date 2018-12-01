@@ -1,7 +1,7 @@
 	
 # Introduction
 
-This repository represents a snapshot of my technical skills in December 2017. My coding practices and skills set has evolved since then. I was the only developer so was responsible for all operational and support tasks as well.
+This repository represents a snapshot of my technical skills in December 2017. My coding practices and skills set have evolved since then. I was the only developer so was responsible for all operational and support tasks as well.
 
 Technologies used: C#, ASP.NET MVC and Web API, Entity Framework 6, LINQ, Razor, HTML5, CSS, Bootstrap, JavaScript, JQuery, AJAX, Google Charts API, IIS, SQL Server
 
